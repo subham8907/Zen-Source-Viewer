@@ -2,7 +2,7 @@
     "name": "Zen Source Viewer",
     "author": "Subham Mahesh",
     "description": "A calm, minimal viewer for the source code of Firefox and Thunderbird add-ons (XPI). Based on Extension source viewer by Rob Wu.",
-    "version": "2.0.103",
+    "version": "3.0.0",
     "manifest_version": 2,
     "browser_specific_settings": {
         "gecko": {
