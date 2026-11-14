@@ -7,7 +7,8 @@
  *
  * Modified by Subham Mahesh (2026): build reduced to a Firefox-only target;
  * added the bundle targets (CodeMirror, MD5); removed CRX helper files; generates
- * the third-party license list for license.html. */
+ * the third-party license list for license.html; generates privacy.html from
+ * PRIVACY.md. */
 
 // Build tool, adapted from PDF.js
 /* jshint node:true */
@@ -24,6 +25,7 @@ var SRC_DIR = ROOT_DIR + 'src/';
 var FIREFOX_BUILD_DIR = BUILD_DIR + 'firefox/';
 var ALLOWED_FILES = [
     'manifest.json',
+    'privacy-policy.json',
     '.css',
     '.html',
     '.js',
@@ -50,7 +52,10 @@ function getBuildConfig(options) {
             [SRC_DIR + 'lib', dest_dir],
             [SRC_DIR + 'icons/*.png', dest_dir + 'icons'],
             [SRC_DIR + 'manifest.json', dest_dir],
+            [SRC_DIR + 'privacy-policy.json', dest_dir],
             [ROOT_DIR + 'LICENSE', dest_dir + 'LICENSE.txt'],
+            [ROOT_DIR + 'LICENSE-FLCL', dest_dir + 'LICENSE-FLCL.txt'],
+            [ROOT_DIR + 'NOTICE.txt', dest_dir + 'NOTICE.txt'],
         ],
         preprocess: [
             [SRC_DIR + '*.html', dest_dir],
@@ -77,6 +82,8 @@ function build(setup, output_root_dir) {
     builder.build(setup);
     // Licenses of all third-party code, shown on license.html.
     require('./external/licenses/generate').generate(output_root_dir + 'third-party-licenses.js');
+    // The Privacy Policy page, from PRIVACY.md and the version in privacy-policy.json.
+    require('./external/privacy/generate').generate(output_root_dir + 'privacy.html');
     exec(ROOT_DIR + '/node_modules/.bin/lessc --strict-math=on "' + SRC_DIR + 'viewer.less" "' + output_root_dir + 'viewer.css"');
 }
 
@@ -131,6 +138,13 @@ target.licenses = function() {
     echo();
     echo('Generating third-party-licenses.js...');
     require('./external/licenses/generate').generate(SRC_DIR + 'third-party-licenses.js');
+};
+
+// Writes privacy.html to src/ (from PRIVACY.md) for testing without a build.
+target.privacy = function() {
+    echo();
+    echo('Generating privacy.html...');
+    require('./external/privacy/generate').generate(SRC_DIR + 'privacy.html');
 };
 
 target.all = function() {

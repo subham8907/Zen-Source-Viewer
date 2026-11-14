@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<!--
+ Copyright 2026 Subham Mahesh
+
+ Licensed under the File-Level Copyleft License (FLCL), Version 1.0
+ (the "License"); you may not use this file except in compliance
+ with the License. You may obtain a copy of the License in the
+ LICENSE-FLCL file accompanying this work.
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ implied. See the License for the specific language governing
+ permissions and limitations under the License.
+-->
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; connect-src 'self' https: http: data: blob:">
+<!-- Privacy consent gate: must stay the first script (see consent-gate.js). -->
+<script src="consent-gate.js"></script>
+<meta name="color-scheme" content="dark light">
+<meta name="viewport" content="width=device-width">
+<title>Compare versions · Zen Source Viewer</title>
+<link rel="stylesheet" type="text/css" href="viewer.css">
+</head>
+<body class="compare-page">
+<header class="compare-header">
+    <div class="compare-title">
+        <img src="icons/48.png" alt="">
+        <div>
+            <h1>Compare versions</h1>
+            <p id="compare-subtitle">See what changed between two versions of an add-on.</p>
+        </div>
+    </div>
+    <div class="compare-header-actions">
+        <button id="swap-sources" type="button" title="Swap the old and new version">Swap</button>
+        <button id="download-patch" type="button" hidden title="Download all differences as a patch (git diff format), to apply with git apply or in the viewer">Download patch</button>
+        <button id="edit-sources" type="button" hidden title="Choose other files to compare">Change files</button>
+        <a id="open-viewer-link" href="viewer.html" title="Open the add-on viewer">Viewer</a>
+    </div>
+</header>
+
+<main id="compare-setup">
+    <div class="source-cards">
+        <section class="source-card" data-side="old">
+            <h2>Old version</h2>
+            <form class="source-url-form">
+                <input type="url" name="url" placeholder="Add-on page, XPI or zip URL" required>
+                <button type="submit">Fetch</button>
+            </form>
+            <div class="source-or">or</div>
+            <label class="source-drop" tabindex="0">
+                <input type="file" accept=".xpi,.zip,.jar" hidden>
+                <span class="source-drop-text">Upload a file <small>(.xpi or .zip, or drop it here)</small></span>
+            </label>
+            <p class="source-status" role="status"></p>
+        </section>
+        <section class="source-card" data-side="new">
+            <h2>New version</h2>
+            <form class="source-url-form">
+                <input type="url" name="url" placeholder="Add-on page, XPI or zip URL" required>
+                <button type="submit">Fetch</button>
+            </form>
+            <div class="source-or">or</div>
+            <label class="source-drop" tabindex="0">
+                <input type="file" accept=".xpi,.zip,.jar" hidden>
+                <span class="source-drop-text">Upload a file <small>(.xpi or .zip, or drop it here)</small></span>
+            </label>
+            <p class="source-status" role="status"></p>
+        </section>
+    </div>
+
+    <section class="source-card amo-versions">
+        <h2>Pick two versions from addons.mozilla.org</h2>
+        <form id="amo-versions-form">
+            <input type="text" name="slug" placeholder="Add-on page URL, slug or ID (e.g. ublock-origin)" required>
+            <button type="submit">Find versions</button>
+        </form>
+        <p id="amo-versions-status" class="source-status" role="status"></p>
+        <ol id="amo-versions-list"></ol>
+        <button id="amo-versions-more" type="button" hidden>Show more versions</button>
+    </section>
+
+    <div class="compare-actions">
+        <button id="compare-button" class="primary" type="button" disabled>Compare</button>
+        <p class="compare-privacy">Files you upload stay on your computer. Fetching a URL downloads it from that website.</p>
+    </div>
+</main>
+
+<main id="compare-results" hidden>
+    <aside class="compare-sidebar">
+        <div class="compare-summary" id="compare-summary"></div>
+        <div class="compare-filter">
+            <input type="search" id="compare-filter" placeholder="Filter files">
+            <label><input type="checkbox" id="show-unchanged"> Unchanged</label>
+        </div>
+        <ol id="compare-file-list"></ol>
+    </aside>
+    <section class="compare-diff">
+        <div class="compare-diff-toolbar">
+            <span class="compare-diff-path" id="diff-path">Choose a file</span>
+            <span class="toolbar-spacer"></span>
+            <button class="change-prev" type="button" title="Previous change">&#8593;</button>
+            <button class="change-next" type="button" title="Next change">&#8595;</button>
+            <button id="toggle-beautify" type="button" title="Format both versions before comparing (useful for minified code)">Beautify</button>
+            <button id="toggle-wrap" type="button" title="Wrap long lines">Wrap</button>
+            <span class="diff-switch" role="group" aria-label="Diff layout">
+                <button data-mode="split" type="button" title="Old and new side by side">Split</button>
+                <button data-mode="unified" type="button" title="Changes inline">Unified</button>
+            </span>
+        </div>
+        <div class="compare-diff-body" id="diff-body">
+            <p class="compare-empty">Select a file to see what changed.</p>
+        </div>
+    </section>
+</main>
+
+<script src="domain-fronter.js"></script>
+<script src="lib/zip.js/zip.js"></script>
+<script src="lib/efficienttextwriter.js"></script>
+<script src="lib/uint8arraywriter.js"></script>
+<script src="open-addon.js"></script>
+<script src="addon-urls.js"></script>
+<script src="lib/beautify/beautify.js"></script>
+<script src="lib/jsdiff.js"></script>
+<script src="lib/strip-json-comments.js"></script>
+<script src="review-report.js"></script>
+<script src="lib/codemirror/zen-editor.js"></script>
+<script src="compare.js"></script>
+</body>
+</html>

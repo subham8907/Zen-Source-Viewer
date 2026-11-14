@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<!--
+ Copyright 2026 Subham Mahesh
+
+ Licensed under the File-Level Copyleft License (FLCL), Version 1.0
+ (the "License"); you may not use this file except in compliance
+ with the License. You may obtain a copy of the License in the
+ LICENSE-FLCL file accompanying this work.
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ implied. See the License for the specific language governing
+ permissions and limitations under the License.
+
+ Privacy consent page. Every other page of the add-on opens this page instead
+ of itself until the user agrees to the current privacy policy version (see
+ consent-gate.js and privacy-policy.json).
+-->
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="color-scheme" content="dark light">
+<meta name="viewport" content="width=device-width">
+<title>Privacy consent &ndash; Zen Source Viewer</title>
+<style>
+:root {
+    --bg: #f4f2ed;
+    --surface: #faf9f6;
+    --border: #e3dfd5;
+    --border-strong: #d3cec2;
+    --text: #2f2d29;
+    --text-muted: #6f6a60;
+    --text-subtle: #a19b8f;
+    --accent: #5b7360;
+    --accent-soft: #e5eae1;
+    --focus-ring: rgba(91, 115, 96, 0.28);
+    --danger: #b4533f;
+    color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg: #161614;
+        --surface: #1c1c19;
+        --border: #2d2c28;
+        --border-strong: #3a3934;
+        --text: #e2ded4;
+        --text-muted: #a8a397;
+        --text-subtle: #78746b;
+        --accent: #9db5a1;
+        --accent-soft: rgba(157, 181, 161, 0.13);
+        --focus-ring: rgba(157, 181, 161, 0.3);
+        --danger: #d98b78;
+        color-scheme: dark;
+    }
+}
+* {box-sizing: border-box;}
+html, body {background: var(--bg); color: var(--text);}
+body {
+    margin: 0;
+    padding: 40px 24px;
+    font: 14px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+main {max-width: 720px; margin: 0 auto;}
+a {color: var(--accent); text-decoration: none;}
+a:hover {text-decoration: underline;}
+[hidden] {display: none !important;}
+.page-header {display: flex; align-items: center; gap: 12px; margin-bottom: 24px;}
+.page-header img {width: 36px; height: 36px; border-radius: 8px;}
+.page-header h1 {
+    margin: 0;
+    font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    font-size: 24px;
+    font-weight: 400;
+    line-height: 1.25;
+}
+.page-header p {margin: 0; font-size: 13px; color: var(--text-muted);}
+.card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 22px;
+}
+h2 {margin: 0 0 6px; font-size: 17px; font-weight: 600;}
+.intro {margin: 0 0 14px; color: var(--text-muted);}
+.version-badge {
+    display: inline-block;
+    padding: 0 10px;
+    font-size: 11.5px;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-radius: 999px;
+    white-space: nowrap;
+}
+.policy-frame {
+    display: block;
+    width: 100%;
+    height: 46vh;
+    min-height: 220px;
+    border: 1px solid var(--border-strong);
+    border-radius: 12px;
+    background: var(--surface);
+}
+.policy-links {margin: 6px 2px 16px; font-size: 12.5px;}
+.agree {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 0 0 16px;
+    cursor: pointer;
+}
+.agree input {margin: 3px 0 0; width: 16px; height: 16px; accent-color: var(--accent); flex: none;}
+.actions {display: flex; flex-wrap: wrap; gap: 10px;}
+button {
+    padding: 8px 18px;
+    font: inherit;
+    font-weight: 500;
+    color: var(--text);
+    background: transparent;
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    cursor: pointer;
+}
+button.primary {color: var(--bg); background: var(--accent); border-color: var(--accent);}
+button:disabled {opacity: 0.45; cursor: default;}
+button:focus-visible, .agree input:focus-visible {outline: none; box-shadow: 0 0 0 3px var(--focus-ring);}
+.status {margin: 14px 0 0; font-size: 13px; color: var(--text-muted);}
+.status.error {color: var(--danger);}
+.done-links {display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px;}
+.done-links a {
+    padding: 7px 14px;
+    font-size: 13px;
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+}
+footer {margin-top: 24px; font-size: 12px; color: var(--text-subtle); text-align: center;}
+footer nav {display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 16px;}
+footer a {color: var(--text-muted);}
+/* Shown in the toolbar popup. */
+html.in-popup body {width: 400px; padding: 16px;}
+html.in-popup .page-header {margin-bottom: 14px;}
+html.in-popup .page-header h1 {font-size: 19px;}
+html.in-popup .card {padding: 16px;}
+html.in-popup .policy-frame {height: 220px; min-height: 0;}
+html.in-popup footer {display: none;}
+</style>
+</head>
+<body>
+<main>
+<header class="page-header">
+    <img src="icons/48.png" alt="">
+    <div>
+        <h1>Zen Source Viewer</h1>
+        <p>Privacy consent</p>
+    </div>
+</header>
+
+<div class="card">
+    <p id="loading" class="intro">Checking&hellip;</p>
+
+    <form id="consent-form" hidden>
+        <h2 id="consent-title">Before you start</h2>
+        <p class="intro" id="consent-intro">
+            Please read the privacy policy and agree to it to use Zen Source Viewer.
+            The add-on stays turned off until you agree.
+        </p>
+        <iframe class="policy-frame" id="policy-frame" title="Privacy Policy" src="privacy.html?embed"></iframe>
+        <p class="policy-links">
+            <span class="version-badge" id="policy-version"></span>
+            &middot; <a href="privacy.html" target="_blank">Open the privacy policy in a new tab</a>
+        </p>
+        <label class="agree">
+            <input type="checkbox" id="agree-checkbox">
+            <span>I have read and agree to the <a href="privacy.html" target="_blank">Privacy Policy</a> (version <span class="policy-version-number"></span>).</span>
+        </label>
+        <div class="actions">
+            <button type="submit" class="primary" id="agree-button" disabled>Agree and continue</button>
+            <button type="button" id="decline-button">Decline</button>
+        </div>
+        <p class="status" id="status" role="status"></p>
+    </form>
+
+    <div id="declined" hidden>
+        <h2>Zen Source Viewer is turned off</h2>
+        <p class="intro">Without your agreement the add-on does nothing. You can agree at any time from this page,
+            or remove the add-on.</p>
+        <div class="actions">
+            <button type="button" class="primary" id="review-again">Review the policy again</button>
+            <button type="button" id="uninstall-button">Remove the add-on</button>
+        </div>
+        <p class="status" id="declined-status" role="status"></p>
+    </div>
+
+    <div id="done" hidden>
+        <h2>Thank you</h2>
+        <p class="intro" id="done-text"></p>
+        <div class="done-links">
+            <a href="viewer.html">Open Viewer</a>
+            <a href="compare.html">Compare versions</a>
+            <a href="options.html">Settings</a>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <nav>
+        <a href="privacy.html" target="_blank">Privacy Policy</a>
+        <a href="license.html" target="_blank">License &amp; Credits</a>
+    </nav>
+</footer>
+</main>
+<script src="consent-state.js"></script>
+<script src="consent.js"></script>
+</body>
+</html>

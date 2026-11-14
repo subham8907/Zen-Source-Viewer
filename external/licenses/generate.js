@@ -1,8 +1,16 @@
 /**
- * (c) 2026 Subham Mahesh
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * Copyright 2026 Subham Mahesh
+ *
+ * Licensed under the File-Level Copyleft License (FLCL), Version 1.0
+ * (the "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License in the
+ * LICENSE-FLCL file accompanying this work.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ * implied. See the License for the specific language governing
+ * permissions and limitations under the License.
  *
  * Generates third-party-licenses.js for the License & Credits page:
  * - the license of this project (LICENSE),
@@ -118,16 +126,20 @@ function describeVendored(item) {
     };
 }
 
-// Every npm package in any bundle; a package used by several bundles is listed once.
+// Every npm package in any bundle; a package used by several bundles is listed
+// once, with all of those bundles in `bundles` (`bundle` is the first of them).
 function getNpmComponents() {
     var byName = new Map();
     bundles.BUNDLES.forEach(function(bundle) {
         bundles.getBundledPackageNames(bundle).forEach(function(name) {
             if (byName.has(name)) {
-                byName.get(name).usedFor += '; ' + bundle.usedFor;
+                var existing = byName.get(name);
+                existing.usedFor += '; ' + bundle.usedFor;
+                existing.bundles.push(bundle.id);
             } else {
                 var component = describeNpmPackage(name, bundle.usedFor);
                 component.bundle = bundle.id;
+                component.bundles = [bundle.id];
                 byName.set(name, component);
             }
         });
@@ -148,12 +160,14 @@ function withEmbedded(npmComponents, embedded) {
                 name: item.name,
                 version: item.version,
                 license: item.license,
-                copyright: firstCopyrightLine(text),
+                // A license template (e.g. Apache-2.0) has no real copyright line.
+                copyright: item.copyright || firstCopyrightLine(text),
                 homepage: item.homepage,
                 usedFor: item.usedFor,
                 note: item.note || '',
                 source: 'npm',
                 bundle: component.bundle,
+                bundles: component.bundles,
                 embeddedIn: component.name,
                 licenseText: text,
             });
@@ -173,6 +187,7 @@ function generate(outputFile) {
             originalWork: project.originalWork,
             modifications: project.modifications,
             licenseText: read(path.join(ROOT_DIR, project.licenseFile)).trim(),
+            flclLicenseText: read(path.join(ROOT_DIR, project.flclLicenseFile)).trim(),
         },
         components: config.vendored.map(describeVendored).concat(withEmbedded(getNpmComponents(), config.embedded || [])),
     };

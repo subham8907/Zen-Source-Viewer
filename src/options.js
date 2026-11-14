@@ -4,10 +4,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
- * Modified by Subham Mahesh, 2026: reduced to Firefox only (removed Chrome, Opera and web-demo code); error text uses the theme color. */
+ * Modified by Subham Mahesh, 2026: reduced to Firefox only (removed Chrome, Opera and web-demo code); error text uses the theme color;
+ * removed the address bar button setting (replaced by a toolbar button); added the Privacy section (withdraw privacy consent). */
 
 /* jshint browser:true, devel:true */
-/* globals chrome */
+/* globals chrome, ZenConsent */
 'use strict'; 
 
 
@@ -56,26 +57,33 @@ contextmenuPatternsInput.oninput = function() {
 storageArea.get({
     showContextMenu: true,
     contextmenuPatterns: [],
-    showPageAction: true,
 }, function(items) {
     document.getElementById('contextmenu').checked = items.showContextMenu;
     contextmenuPatternsInput.disabled = !items.showContextMenu;
     contextmenuPatternsInput.value = items.contextmenuPatterns.join('\n');
-    document.getElementById('pageaction').checked = items.showPageAction;
-});
-
-document.getElementById('pageaction').onchange = function() {
-    storageArea.set({showPageAction: this.checked});
-};
-
-// May change via bg-contextmenu.js when the user toggles the option via the context menu.
-chrome.storage.onChanged.addListener(function(items) {
-    if (items.showPageAction) {
-        document.getElementById('pageaction').checked = items.showPageAction.newValue;
-    }
 });
 
 if (location.hash !== '#optionsV2') {
     // A normal options page, open links in the same tab.
     document.querySelector('base').remove();
 }
+
+// Privacy consent (see consent-state.js).
+(function() {
+    var summary = document.getElementById('consent-summary');
+    var withdrawButton = document.getElementById('withdraw-consent');
+    ZenConsent.check().then(function(result) {
+        if (!result.ok) return; // consent-gate.js opens the consent page.
+        var date = new Date(result.consent.acceptedAt);
+        summary.textContent = 'You agreed to version ' + result.consent.version + ' of the privacy policy' +
+            (isNaN(date) ? '' : ' on ' + date.toLocaleDateString(undefined, {year: 'numeric', month: 'long', day: 'numeric'})) +
+            '. Withdrawing turns the add-on off until you agree again.';
+    });
+    withdrawButton.onclick = function() {
+        if (!window.confirm('Withdraw your consent to the privacy policy? Zen Source Viewer stops working until you agree again.')) {
+            return;
+        }
+        // consent-gate.js notices the change and opens the consent page.
+        ZenConsent.withdraw();
+    };
+})();

@@ -33444,6 +33444,7 @@
     const diffCompartment = new Compartment();
     const wrapCompartment = new Compartment();
     const highlightCompartment = new Compartment();
+    const notesCompartment = new Compartment();
     const splitHighlightCompartment = new Compartment();
     let filterQuery = null;
     let panelQuery = null;
@@ -33566,6 +33567,7 @@
       readOnlyCompartment.of(readOnlyExtension(options.readOnly)),
       wrapCompartment.of(options.wrap ? EditorView.lineWrapping : []),
       highlightCompartment.of([]),
+      notesCompartment.of([]),
       diffCompartment.of([]),
       panelQueryListener,
       EditorView.updateListener.of((update) => {
@@ -33582,10 +33584,14 @@
     if (language2.isJson && !isLarge) {
       extensions.push(linter(jsonParseLinter()), lintGutter());
     }
+    const startText = typeof options.initialDoc === "string" ? options.initialDoc : originalText;
     const view = new EditorView({
-      state: EditorState.create({ doc: originalText, extensions }),
+      state: EditorState.create({ doc: startText, extensions }),
       parent: options.parent
     });
+    if (startText !== originalText) {
+      lastModified = true;
+    }
     function allMatches(limit) {
       const query = effectiveQuery();
       const result = [];
@@ -33662,8 +33668,30 @@
     return {
       view,
       languageName: language2.name,
+      // Shows a marker next to lines with notes: [{line, title}] (1-based
+      // lines). onClick(line) is called when a marker is clicked.
+      setNotes(notes, onClick) {
+        view.dispatch({ effects: notesCompartment.reconfigure(notesGutter(notes || [], onClick)) });
+      },
+      // The 1-based line of the cursor, and its text.
+      getCursorLine() {
+        const line = view.state.doc.lineAt(view.state.selection.main.head);
+        return { line: line.number, text: line.text };
+      },
+      getLineText(number2) {
+        if (number2 < 1 || number2 > view.state.doc.lines) return "";
+        return view.state.doc.line(number2).text;
+      },
       getText() {
         return view.state.doc.toString();
+      },
+      getOriginalText() {
+        return originalText;
+      },
+      // Replaces the whole text (e.g. with the result of applying a patch).
+      setText(text) {
+        const target = mergeView ? mergeView.b : view;
+        target.dispatch({ changes: { from: 0, to: target.state.doc.length, insert: text } });
       },
       isModified() {
         return lastModified;
@@ -33803,5 +33831,156 @@
       }
     };
   }
-  window.ZenEditor = { create, languageForFilename: (f) => languageForFilename(f).name };
+  var NoteMarker = class extends GutterMarker {
+    constructor(title) {
+      super();
+      this.title = title;
+    }
+    eq(other) {
+      return other.title === this.title;
+    }
+    toDOM() {
+      const marker = document.createElement("span");
+      marker.className = "cm-zen-note-marker";
+      marker.textContent = "\u25CF";
+      marker.title = this.title;
+      return marker;
+    }
+  };
+  function notesGutter(notes, onClick) {
+    if (!notes.length) return [];
+    const byLine = /* @__PURE__ */ new Map();
+    notes.forEach((note) => {
+      const titles = byLine.get(note.line) || [];
+      titles.push(note.title);
+      byLine.set(note.line, titles);
+    });
+    const lines = Array.from(byLine.keys()).sort((a, b) => a - b);
+    return gutter({
+      class: "cm-zen-notes-gutter",
+      markers(view) {
+        const builder = new RangeSetBuilder();
+        lines.forEach((number2) => {
+          if (number2 < 1 || number2 > view.state.doc.lines) return;
+          const line = view.state.doc.line(number2);
+          builder.add(line.from, line.from, new NoteMarker(byLine.get(number2).join("\n\n")));
+        });
+        return builder.finish();
+      },
+      initialSpacer: () => new NoteMarker(""),
+      domEventHandlers: {
+        mousedown(view, block) {
+          const number2 = view.state.doc.lineAt(block.from).number;
+          if (!byLine.has(number2) || !onClick) return false;
+          onClick(number2);
+          return true;
+        }
+      }
+    });
+  }
+  function textToDoc(text) {
+    return Text.of(text.split(/\r\n|\r|\n/));
+  }
+  function createDiffView(options) {
+    const language2 = languageForFilename(options.filename);
+    const originalDoc2 = textToDoc(options.original);
+    const modifiedDoc = textToDoc(options.modified);
+    let mode = options.mode === "unified" ? "unified" : "split";
+    let wrap = !!options.wrap;
+    let mergeView = null;
+    let unifiedView = null;
+    const host = document.createElement("div");
+    host.className = "cm-zen-diff";
+    options.parent.appendChild(host);
+    function shared() {
+      return [
+        lineNumbers(),
+        highlightSpecialChars(),
+        drawSelection(),
+        EditorState.readOnly.of(true),
+        EditorView.editable.of(false),
+        EditorState.tabSize.of(4),
+        syntaxHighlighting(zenHighlightStyle, { fallback: true }),
+        highlightSelectionMatches(),
+        search({ top: true }),
+        keymap.of([...defaultKeymap, ...searchKeymap]),
+        language2.support,
+        zenTheme,
+        wrap ? EditorView.lineWrapping : []
+      ];
+    }
+    function render() {
+      if (mergeView) mergeView.destroy();
+      if (unifiedView) unifiedView.destroy();
+      mergeView = unifiedView = null;
+      host.textContent = "";
+      const diffConfig = { scanLimit: 500, timeout: 500 };
+      const collapseUnchanged2 = { margin: 3, minSize: 6 };
+      if (mode === "split") {
+        mergeView = new MergeView({
+          a: { doc: originalDoc2, extensions: shared() },
+          b: { doc: modifiedDoc, extensions: shared() },
+          parent: host,
+          gutter: true,
+          highlightChanges: true,
+          collapseUnchanged: collapseUnchanged2,
+          diffConfig
+        });
+      } else {
+        unifiedView = new EditorView({
+          state: EditorState.create({
+            doc: modifiedDoc,
+            extensions: [
+              shared(),
+              unifiedMergeView({
+                original: originalDoc2,
+                gutter: true,
+                highlightChanges: true,
+                syntaxHighlightDeletions: true,
+                mergeControls: false,
+                collapseUnchanged: collapseUnchanged2,
+                diffConfig
+              })
+            ]
+          }),
+          parent: host
+        });
+      }
+    }
+    render();
+    return {
+      get mode() {
+        return mode;
+      },
+      setMode(newMode) {
+        if (newMode === mode) return;
+        mode = newMode;
+        render();
+      },
+      setWrap(newWrap) {
+        if (newWrap === wrap) return;
+        wrap = newWrap;
+        render();
+      },
+      // Moves to the next (dir=1) or previous (dir=-1) changed block.
+      goToChange(dir) {
+        const target = mergeView ? mergeView.b : unifiedView;
+        const command2 = dir < 0 ? goToPreviousChunk : goToNextChunk;
+        command2({ state: target.state, dispatch: (tr) => target.dispatch(tr) });
+        target.dispatch({ effects: EditorView.scrollIntoView(target.state.selection.main.head, { y: "center" }) });
+      },
+      destroy() {
+        if (mergeView) mergeView.destroy();
+        if (unifiedView) unifiedView.destroy();
+        host.remove();
+      }
+    };
+  }
+  window.ZenEditor = {
+    create,
+    createDiffView,
+    // Line counts of the differences between two texts: {added, removed}.
+    diffStats: (original, modified) => diffStats(textToDoc(original), textToDoc(modified)),
+    languageForFilename: (f) => languageForFilename(f).name
+  };
 })();

@@ -5,13 +5,15 @@
  License, v. 2.0. If a copy of the MPL was not distributed with this
  file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
- Modified by Subham Mahesh, 2026: redesigned the user interface; reduced to Firefox only (removed Chrome, Opera and web-demo code); added a License & Credits link; renamed to Zen Source Viewer; removed CRX support.
+ Modified by Subham Mahesh, 2026: redesigned the user interface; reduced to Firefox only (removed Chrome, Opera and web-demo code); added a License & Credits link; renamed to Zen Source Viewer; removed CRX support; removed the address bar button setting (replaced by a toolbar button); added a Privacy section to withdraw privacy consent, a Privacy Policy link and the privacy consent gate.
 -->
 <html>
 <head>
 <!-- Only for optionsV2 pages -->
 <base target="_blank">
 <meta charset="utf-8">
+<!-- Privacy consent gate: must stay the first script (see consent-gate.js). -->
+<script src="consent-gate.js"></script>
 <meta name="color-scheme" content="dark light">
 <meta name="viewport" content="width=device-width">
 <title>Zen Source Viewer settings</title>
@@ -93,6 +95,17 @@ a:hover {text-decoration: underline;}
     color: var(--accent);
     border: 1px solid var(--accent);
     border-radius: 999px;
+}
+.page-header .open-viewer.secondary {
+    margin-left: 0;
+    color: var(--text-muted);
+    border-color: var(--border-strong);
+}
+.page-header .open-viewer:not(.secondary) {
+    margin-left: 0;
+}
+.page-header .open-viewer:first-of-type {
+    margin-left: auto;
 }
 .page-header .open-viewer:hover {text-decoration: none; color: var(--bg); background: var(--accent);}
 .section-title {
@@ -190,6 +203,22 @@ a:hover {text-decoration: underline;}
     word-break: break-all;
 }
 #contextmenuPatternsOutput:empty {display: none;}
+.privacy-setting {cursor: default;}
+.privacy-setting:hover {background: none;}
+.withdraw-button {
+    flex: none;
+    order: 2;
+    padding: 6px 14px;
+    font: inherit;
+    font-size: 13px;
+    color: var(--danger);
+    background: transparent;
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    cursor: pointer;
+}
+.withdraw-button:hover {border-color: var(--danger);}
+.withdraw-button:focus-visible {outline: none; box-shadow: 0 0 0 3px var(--focus-ring);}
 footer {
     padding: 8px 0 0;
     font-size: 12px;
@@ -215,18 +244,12 @@ footer a:hover {color: var(--accent);}
         <h1>Zen Source Viewer</h1>
         <p>Settings</p>
     </div>
+    <a class="open-viewer secondary" href="compare.html" title="Compare two versions of an add-on">Compare versions</a>
     <a class="open-viewer" href="viewer.html" title="Select an XPI or ZIP file to view its contents">Open Viewer</a>
 </header>
 
 <h2 class="section-title">Access</h2>
 <div class="card">
-    <label class="setting" id="pageaction-wrapper">
-        <input type="checkbox" id="pageaction">
-        <span class="setting-text">
-            <span class="setting-title">Show address bar button</span>
-            <span class="setting-desc">Show a page action button in the location bar of extension installation pages.</span>
-        </span>
-    </label>
     <label class="setting">
         <input type="checkbox" id="contextmenu">
         <span class="setting-text">
@@ -241,15 +264,29 @@ footer a:hover {color: var(--accent);}
     </label>
 </div>
 
+<h2 class="section-title">Privacy</h2>
+<div class="card">
+    <div class="setting privacy-setting">
+        <span class="setting-text">
+            <span class="setting-title">Privacy policy consent</span>
+            <span class="setting-desc" id="consent-summary">Checking&hellip;</span>
+            <span class="setting-desc"><a href="privacy.html">Read the privacy policy</a></span>
+        </span>
+        <button type="button" id="withdraw-consent" class="withdraw-button">Withdraw consent</button>
+    </div>
+</div>
+
 <footer>
     &copy; 2013&ndash;2026 Rob Wu &lt;rob@robwu.nl&gt; &middot; Modifications &copy; 2026 Subham Mahesh
     <nav>
         <a href="license.html">License &amp; Credits</a>
+        <a href="privacy.html">Privacy Policy</a>
         <a href="https://github.com/Rob--W/crxviewer">Original source code</a>
         <a href="https://addons.mozilla.org/firefox/addon/crxviewer/">Original Firefox add-on</a>
     </nav>
 </footer>
 </main>
+<script src="consent-state.js"></script>
 <script src="options.js"></script>
 </body>
 </html>

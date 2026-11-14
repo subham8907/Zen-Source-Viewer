@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-  <!-- Zen Source Viewer icon. (c) 2026 Subham Mahesh. MPL-2.0. -->
+  <!-- Zen Source Viewer icon. Copyright 2026 Subham Mahesh. Licensed under the File-Level Copyleft License (FLCL), Version 1.0; see LICENSE-FLCL. -->
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#6d8772"/>

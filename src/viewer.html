@@ -5,14 +5,16 @@
  License, v. 2.0. If a copy of the MPL was not distributed with this
  file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
- Modified by Subham Mahesh, 2026: refreshed the open-extension view and footer credits; code is shown in a CodeMirror 6 editor; Changes panel with diffs; reduced to Firefox only (removed Chrome, Opera and web-demo code, and Chrome/Edge/Opera CRX support; renamed from crxviewer.html); renamed to Zen Source Viewer.
+ Modified by Subham Mahesh, 2026: refreshed the open-extension view and footer credits; code is shown in a CodeMirror 6 editor; Changes panel with diffs; WebExtension API search and local API summaries; locale coverage with a side-by-side locale diff (locale-diff.js); review report, review notes, quick open, symbols, tabs and shortcuts (review-report.js, review-notes.js, navigator.js); creating, renaming and deleting files and folders (file-ops.js); link to compare.html; reduced to Firefox only (removed Chrome, Opera and web-demo code, and Chrome/Edge/Opera CRX support; renamed from crxviewer.html); renamed to Zen Source Viewer; added a Privacy Policy link and the privacy consent gate.
 
 //#expand Revision __VERSION__
  -->
 <html>
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; media-src 'self' data:; connect-src https: http: data: blob:">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; media-src 'self' data:; connect-src 'self' https: http: data: blob:">
+<!-- Privacy consent gate: must stay the first script (see consent-gate.js). -->
+<script src="consent-gate.js"></script>
 <title>Zen Source Viewer</title>
 <meta name="color-scheme" content="dark light">
 <link rel="stylesheet" type="text/css" href="viewer.css">
@@ -27,7 +29,8 @@ title="File filter (case-insensitive). Formats:
 3. [filename filter regexp]!case:file content search term (case-sensitive)
 4. [filename filter regexp]!regexp:filter content regexp (case-sensitive)
 5. [filename filter regexp]!iregexp:filter content regexp (case-insensitive)
-The filename filter is optional, '!search term' can also be used directly to search in all files.
+6. [filename filter regexp]!api:tabs.query (WebExtension API usage; browser.* and chrome.*)
+The filename filter is optional; '!search term' searches all files. API searches default to JavaScript, TypeScript and HTML files.
 " list="file-filter-patterns">
         <label title="Filter: Images">
             <input type="checkbox" data-filter-type="images">
@@ -58,9 +61,18 @@ The filename filter is optional, '!search term' can also be used directly to sea
     <span id="file-filter-feedback"></span>
     <div class="top-actions">
         <a id="listing-link">Listing</a>
+        <button id="api-report-toggle" hidden aria-controls="api-panel" aria-expanded="false"
+            title="Detect WebExtension APIs and show local summaries">APIs</button>
+        <button id="locale-report-toggle" hidden aria-controls="locale-panel" aria-expanded="false"
+            title="Compare localized messages and show key coverage">Locales</button>
+        <button id="review-toggle" hidden title="Review report: permissions, code to check, network addresses and translations used in the code">Review</button>
+        <button id="notes-toggle" hidden title="Review notes: add notes to lines of code and export them">Notes</button>
+        <button id="apply-patch" hidden title="Apply a patch (.patch or .diff file, e.g. from git diff) to this add-on">Apply patch</button>
         <button id="download-edited-zip" hidden>Download edited zip</button>
         <a id="download-link">Download</a>
+        <a id="compare-link" href="compare.html" title="Compare two versions of an add-on">Compare</a>
         <a id="open-viewer">Open</a>
+        <button id="shortcuts-button" title="Keyboard shortcuts (?)" aria-label="Keyboard shortcuts">?</button>
     </div>
 </div>
 <div id="advanced-open">
@@ -70,8 +82,12 @@ The filename filter is optional, '!search term' can also be used directly to sea
         or an add-on page on addons.mozilla.org or addons.thunderbird.net.
         <input type="url" placeholder="URL of a Firefox add-on, XPI or zip file" name="url">
         <input type="submit" value="Open in this viewer">
-        or select a local file &rarr;
-        <input type="file" accept=".xpi,.zip,.jar">
+        <div class="source-or">or</div>
+        <label class="source-drop" id="open-file-drop" tabindex="0" title="Choose an .xpi or .zip file from your computer">
+            <input type="file" accept=".xpi,.zip,.jar" hidden>
+            <span class="source-drop-text">Upload an .xpi or .zip file <small>(choose a file, or drop it here; it stays on your computer)</small></span>
+        </label>
+        <p class="compare-hint"><a href="compare.html">Compare two versions of an add-on &rarr;</a></p>
     </form>
     <form id="advanced-open-amo-extension" class="site-specific-form">
         <h3>Find XPI files of Firefox add-ons at AMO</h3>
@@ -88,11 +104,42 @@ The filename filter is optional, '!search term' can also be used directly to sea
 </div>
 <div id="left-panel">
     <div class="content">
+        <div id="file-tree-actions" hidden>
+            <span class="file-tree-title">Files</span>
+            <button id="new-file-button" type="button" title="Create a new file (in the folder of the selected file). Right-click the tree for more: rename, delete, new folder.">+ File</button>
+            <button id="new-folder-button" type="button" title="Create a new folder (in the folder of the selected file)">+ Folder</button>
+        </div>
+        <section id="locale-panel" hidden aria-label="Locale message coverage">
+            <div class="locale-panel-header">
+                <span class="locale-panel-title">Locale coverage</span>
+                <span class="locale-panel-count"></span>
+                <button id="locale-export-json" disabled title="Download the locale comparison as JSON">Export JSON</button>
+                <button id="locale-export-csv" disabled title="Download the locale comparison as CSV">Export CSV</button>
+                <button id="locale-rescan" title="Scan locale message files again">Rescan</button>
+                <button id="locale-panel-close" title="Close locale coverage">Close</button>
+            </div>
+            <p id="locale-panel-status" role="status">Open this panel to scan locale message files.</p>
+            <p class="locale-doc-note"><a href="https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/i18n/Locale-Specific_Message_reference" target="_blank" rel="noopener noreferrer">Mozilla locale message format</a></p>
+            <label id="locale-reference-label" class="locale-reference-label" for="locale-reference">Compare locales against</label>
+            <select id="locale-reference" hidden></select>
+            <ol id="locale-list"></ol>
+        </section>
+        <section id="api-panel" hidden aria-label="Detected WebExtension APIs">
+            <div class="api-panel-header">
+                <span class="api-panel-title">Detected APIs</span>
+                <span class="api-panel-count"></span>
+                <button id="api-rescan" title="Scan the current source files again">Rescan</button>
+                <button id="api-panel-close" title="Close API summary">Close</button>
+            </div>
+            <p id="api-panel-status" role="status">Open API summary to scan the source files.</p>
+            <ol id="api-list"></ol>
+        </section>
         <section id="changes-panel" hidden>
             <div class="changes-header">
                 <span class="changes-title">Changes</span>
                 <span class="changes-count"></span>
                 <span class="changes-total"></span>
+                <button id="changes-download-patch" title="Download your changes as a patch (git diff format)">Patch</button>
                 <button id="changes-download-zip" title="Download a new zip file that includes your edits">Zip</button>
                 <button id="revert-all-changes" title="Discard all edits">Revert all</button>
             </div>
@@ -106,6 +153,7 @@ The filename filter is optional, '!search term' can also be used directly to sea
     </div>
 </div>
 <div id="right-panel">
+    <div id="file-tabs" role="tablist" aria-label="Open files" hidden></div>
     <div id="source-toolbar"></div>
     <div id="source-code">
         <div id="initial-status"></div>
@@ -115,7 +163,8 @@ The filename filter is optional, '!search term' can also be used directly to sea
     Original work by <a href="https://robwu.nl">Rob Wu</a>
     (<a href="https://github.com/Rob--W/crxviewer">source</a>) &middot;
     Modified by Subham Mahesh &middot;
-    <a href="license.html" target="_blank">License &amp; Credits</a>
+    <a href="license.html" target="_blank">License &amp; Credits</a> &middot;
+    <a href="privacy.html" target="_blank">Privacy Policy</a>
 </footer>
 <datalist id="file-filter-patterns">
     <option value="\.js$" label="JavaScript">
@@ -124,6 +173,7 @@ The filename filter is optional, '!search term' can also be used directly to sea
     <option value="\.(js|css|html)$" label="JS / CSS / HTML">
     <option value="!browser." label="Files using the browser API">
     <option value="!regexp:(chrome|browser)\." label="Regexp file search">
+    <option value="!api:tabs.query" label="WebExtension API usage">
     <option value="\.html$!http:" label="All HTML files containing http:.">
 </datalist>
 <script src="domain-fronter.js"></script>
@@ -134,11 +184,19 @@ The filename filter is optional, '!search term' can also be used directly to sea
 <script src="addon-urls.js"></script>
 <script src="lib/beautify/beautify.js"></script>
 <script src="lib/strip-json-comments.js"></script>
+<script src="lib/jsdiff.js"></script>
 <script src="lib/noble-md5.js"></script>
 <script src="lib/modern-crypto.js"></script>
 <script src="lib/codemirror/zen-editor.js"></script>
 <script src="asn1lite.js"></script>
 <script src="mozcose.js"></script>
+<script src="webextension-api-catalog.js"></script>
+<script src="main-view.js"></script>
+<script src="review-report.js"></script>
+<script src="review-notes.js"></script>
+<script src="navigator.js"></script>
+<script src="file-ops.js"></script>
+<script src="locale-diff.js"></script>
 <script src="viewer.js"></script>
 </body>
 </html>

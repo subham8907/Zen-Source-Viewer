@@ -2,3 +2,4 @@
 node_modules/
 dist/
 src/third-party-licenses.js
+src/privacy.html

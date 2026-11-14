@@ -6,13 +6,14 @@
  *
  * Modified by Subham Mahesh, 2026: renamed from cws_pattern.js; only Firefox
  * and Thunderbird add-on sites (addons.mozilla.org, addons.thunderbird.net)
- * are supported. Chrome Web Store, Edge and Opera (CRX) support was removed. */
+ * are supported. Chrome Web Store, Edge and Opera (CRX) support was removed.
+ * can_view_addon_url only accepts add-on pages and .xpi addresses (for the toolbar popup). */
 
-/* globals location, navigator */
+/* globals location, navigator, XMLHttpRequest, console */
 /* exported amo_match_patterns, atn_match_patterns, amo_pattern, atn_pattern */
 /* exported get_addon_download_url, get_listing_url, get_zip_name, get_amo_domain, get_amo_slug */
 /* exported is_cors_enabled_download_url, can_view_addon_url, is_addon_download_url, is_listing_url */
-/* exported getParam, encodeQueryString */
+/* exported getParam, encodeQueryString, getXpis */
 'use strict';
 
 // Firefox add-on gallery (addons.mozilla.org and its staging servers)
@@ -38,10 +39,9 @@ var atn_match_patterns = [
     '*://addons-stage.thunderbird.net/*addon/*',
 ];
 
-// page_action.show_matches (in manifest.json) uses amo_match_patterns and
-// atn_match_patterns. popup.js uses can_view_addon_url to determine whether
-// the URL can actually be opened, which uses regexps that may be stricter than
-// the match patterns.
+// bg-contextmenu.js uses amo_match_patterns and atn_match_patterns. popup.js
+// uses can_view_addon_url to determine whether the current page can be
+// opened, which uses regexps that may be stricter than the match patterns.
 
 function get_xpi_url(amoDomain, addonSlug) {
     // "https://addons.mozilla.org/firefox/downloads/latest/<slug>/" is suggested by TheOne:
@@ -132,9 +132,22 @@ function is_cors_enabled_download_url(url) {
     return amo_domain_pattern.test(url) || amo_xpi_cdn_pattern.test(url);
 }
 
-// Whether the URL is supported by the viewer (used in the popup).
+// Whether the page at this URL is an add-on that the popup can open: an add-on
+// page or download link of addons.mozilla.org or addons.thunderbird.net, or a
+// web address of an .xpi file. Other pages (also pages that merely mention
+// ".xpi" in their address, e.g. a search) are not.
 function can_view_addon_url(url) {
-    return is_addon_download_url(url) || is_listing_url(url);
+    if (!/^https?:\/\//i.test(url)) {
+        return false;
+    }
+    if (is_listing_url(url) || amo_download_pattern.test(url) || atn_download_pattern.test(url)) {
+        return true;
+    }
+    try {
+        return /\.xpi$/i.test(new URL(url).pathname);
+    } catch (e) {
+        return false;
+    }
 }
 
 // Whether the given URL is from a URL that is expected to serve the add-on file.
@@ -147,6 +160,71 @@ function is_addon_download_url(url) {
 function is_listing_url(url) {
     // Keep logic in sync with get_listing_url.
     return amo_pattern.test(url) || atn_pattern.test(url);
+}
+
+// Calls callback(description, Array<{url:String, version:String, platform:String}>)
+// If there are more results: The callback will include a third parameter with a non-zero page number to use.
+// If called repeatedly: Will only call the callback of the last call.
+function getXpis(amodomain, slugorid, page, callback) {
+    var apiUrl = 'https://' + amodomain + '/api/v4/addons/addon/' + slugorid + '/versions/';
+    // Have smaller response bodies by only including one language.
+    apiUrl += '?lang=en-US';
+    if (page) {
+        apiUrl += '&page=' + page;
+    } else {
+        // When the page parameter is omitted, it defaults to 1.
+        page = 1;
+    }
+    var x = new XMLHttpRequest();
+    x.open('GET', apiUrl);
+    x.onloadend = function() {
+        if (getXpis._pendingXhr === x) {
+            getXpis._pendingXhr = null;
+        }
+
+        if (x.status === 401 || x.status === 403) {
+            callback('The results are not publicly available for: ' + slugorid, []);
+            return;
+        }
+        if (x.status !== 200) {
+            callback('No results found for: ' + slugorid, []);
+            return;
+        }
+        var nextPage = 0;
+        var totalVersions = 0;
+        var results = [];
+        try {
+            var response = JSON.parse(x.responseText);
+            response.results.forEach(function(res) {
+                res.files.forEach(function(file) {
+                    results.push({
+                        url: file.url.replace(/\.xpi\?.*$/, '.xpi'),
+                        version: res.version,
+                        platform: file.platform,
+                        createdDate: new Date(file.created),
+                    });
+                });
+            });
+            if (response.next) {
+                nextPage = page + 1;
+            }
+            totalVersions = response.count;
+        } catch (e) {
+            console.error('Failed to parse response', e);
+            callback('Unexpected response from add-ons server (' + e + ').', results);
+            return;
+        }
+        if (nextPage) {
+            callback('Found ' + totalVersions + ' results', results, nextPage);
+            return;
+        }
+        callback('Found ' + results.length + ' recent results.', results);
+    };
+    if (getXpis._pendingXhr) {
+        getXpis._pendingXhr.abort();
+    }
+    x.send();
+    getXpis._pendingXhr = x;
 }
 
 // |name| should not contain special RegExp characters, except possibly maybe a '[]' at the end.

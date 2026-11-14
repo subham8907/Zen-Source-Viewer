@@ -1,8 +1,17 @@
 /**
- * (c) 2026 Subham Mahesh
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+ * Copyright 2026 Subham Mahesh
+ *
+ * Licensed under the File-Level Copyleft License (FLCL), Version 1.0
+ * (the "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License in the
+ * LICENSE-FLCL file accompanying this work.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ * implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ */
 
 /* globals LICENSE_DATA */
 'use strict';
@@ -32,6 +41,7 @@
 
     // License of the project itself.
     document.querySelector('#project-license pre').textContent = data.project.licenseText;
+    document.querySelector('#flcl-license pre').textContent = data.project.flclLicenseText || '';
 
     // Contributors of the original work.
     var contributors = data.project.originalWork && data.project.originalWork.contributors;
@@ -96,11 +106,16 @@
         zip: ['Zip files: zip.js', 'Bundled from npm into lib/zip.js/zip.js.'],
         beautify: ['Code formatting: js-beautify', 'Bundled from npm into lib/beautify/beautifier.js.'],
         json: ['Reading manifest.json: strip-json-comments', 'Bundled from npm into lib/strip-json-comments.js.'],
+        patch: ['Patches: jsdiff, fflate and SHA-1', 'Bundled from npm into lib/jsdiff.js.'],
         md5: ['MD5 hashing', 'Bundled from npm into lib/noble-md5.js.'],
     };
+    // A package used by several bundles (e.g. @noble/hashes) is shown in each of them.
+    function inBundle(c, bundle) {
+        return c.bundles ? c.bundles.indexOf(bundle) !== -1 : c.bundle === bundle;
+    }
     Object.keys(bundleGroups).forEach(function(bundle) {
         renderGroup(bundleGroups[bundle][0], bundleGroups[bundle][1],
-            data.components.filter(function(c) { return c.source === 'npm' && c.bundle === bundle; }));
+            data.components.filter(function(c) { return c.source === 'npm' && inBundle(c, bundle); }));
     });
     // Any other bundle (in case one is added without a title above).
     renderGroup('Other bundled packages', 'Bundled from npm into lib/.',

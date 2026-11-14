@@ -9,20 +9,24 @@
  * the file list is shown as a collapsible folder tree; code is shown in a
  * CodeMirror 6 editor with editing, and edited files can be downloaded as a zip;
  * a Changes panel lists edited files with diffs (unified or split) and revert;
- * zip.js, js-beautify and strip-json-comments are bundled from npm. */
+ * zip.js, js-beautify and strip-json-comments are bundled from npm; a Compare button
+ * opens compare.html to compare two versions; changes can be downloaded as a
+ * patch and patches can be applied (lib/jsdiff.js); WebExtension APIs in source
+ * can be detected and summarized from a bundled local catalog; locale message
+ * files can be compared for key coverage and missing translations. */
 
 /* jshint browser:true, devel:true */
 /* globals chrome, URL,
            getParam, encodeQueryString, openAddonAsZip, get_zip_name, get_listing_url, is_listing_url,
            get_addon_download_url, is_addon_download_url,
-           get_amo_domain, get_amo_slug,
+           get_amo_domain, get_amo_slug, getXpis,
            zip,
            EfficientTextWriter,
            beautify,
            ZenEditor,
            Uint8ArrayWriter, ModernCrypto,
            parseCertificate, parseMozCOSE,
-           stripJsonComments
+           stripJsonComments, ZenPatch, WEBEXTENSION_API_CATALOG
            */
 
 'use strict';
@@ -46,7 +50,21 @@ function formatByteSizeSuffix(fileSize) {
     // Which fool stores over 1 GB of data in an extension???
     return Math.round(fileSize/1e9) + ' GB';
 }
-function handleZipEntries(entries) {
+// options.keepState: rebuild the tree (e.g. after a patch added files) without
+// resetting edits, collapsed folders or the shown file.
+function handleZipEntries(entries, options) {
+    invalidateApiReport();
+    invalidateLocaleCoverage();
+    document.getElementById('api-report-toggle').hidden = false;
+    document.getElementById('locale-report-toggle').hidden = false;
+    // Review tools (review-report.js, review-notes.js).
+    document.getElementById('review-toggle').hidden = false;
+    document.getElementById('notes-toggle').hidden = false;
+    document.getElementById('file-tree-actions').hidden = false;
+    ZenReview.invalidate();
+    var keepState = !!(options && options.keepState);
+    var selectedFilename = keepState && document.querySelector('#file-list li.file-selected');
+    selectedFilename = selectedFilename && selectedFilename.dataset.filename;
     var output = document.createDocumentFragment();
     // Files are shown as a folder tree, like a file explorer.
     var treeRoot = {folders: {}, files: []};
@@ -61,8 +79,17 @@ function handleZipEntries(entries) {
 '</span>' +
 '<span class="file-size"></span>';
     entries.forEach(function(entry) {
-        // Who cares about folders? Files are interesting!
-        if (entry.directory) return;
+        if (entry.directory) {
+            // Folders created in the viewer (file-ops.js) are shown even when empty.
+            if (entry._isUserFolder) {
+                var folderNode = treeRoot;
+                entry.filename.replace(/\/$/, '').split('/').forEach(function(folderName) {
+                    folderNode = folderNode.folders[folderName] ||
+                        (folderNode.folders[folderName] = {folders: {}, files: []});
+                });
+            }
+            return;
+        }
 
         var filename = entry.filename;
         var listItem = listItemBase.cloneNode(true);
@@ -105,12 +132,15 @@ function handleZipEntries(entries) {
         node.files.push({name: filename.slice(filenameIndex), listItem: listItem});
         ++fileCount;
     });
-    editedFiles.clear();
-    document.getElementById('download-edited-zip').hidden = true;
-    scheduleChangesPanelRender();
-    // Small archives start fully expanded; larger ones start collapsed.
-    fileTreeCollapsedFolders = new Set();
-    var collapseByDefault = fileCount > 40;
+    if (!keepState) {
+        document.getElementById('apply-patch').hidden = false;
+        editedFiles.clear();
+        document.getElementById('download-edited-zip').hidden = true;
+        scheduleChangesPanelRender();
+        // Small archives start fully expanded; larger ones start collapsed.
+        fileTreeCollapsedFolders = new Set();
+    }
+    var collapseByDefault = !keepState && fileCount > 40;
     function appendTree(node, depth, pathPrefix) {
         // manifest.json first, then folders, then the other files.
         var files = node.files.sort(function(x, y) {
@@ -180,6 +210,15 @@ function handleZipEntries(entries) {
         counter.textContent = genericTypeCounts[genericType];
     });
 
+    if (keepState) {
+        editedFiles.forEach(function(change, filename) {
+            markFileListItem(filename, change);
+        });
+        var selectedItem = selectedFilename && getFileListItem(selectedFilename);
+        if (selectedItem) selectedItem.classList.add('file-selected');
+        scheduleChangesPanelRender();
+        return;
+    }
     renderInitialViewFromUrlParams();
 }
 // Folder paths (ending with "/") that the user collapsed in the file tree.
@@ -207,6 +246,15 @@ function updateFileTree() {
         for (j = path.indexOf('/'); j !== -1; j = path.indexOf('/', j + 1)) {
             foldersWithVisibleFiles.add(path.slice(0, j + 1));
         }
+    }
+    // Folders created in the viewer stay visible while they are empty.
+    if (!isFiltering) {
+        addedEntries.forEach(function(entry) {
+            if (!entry._isUserFolder) return;
+            for (j = entry.filename.indexOf('/'); j !== -1; j = entry.filename.indexOf('/', j + 1)) {
+                foldersWithVisibleFiles.add(entry.filename.slice(0, j + 1));
+            }
+        });
     }
 
     for (i = 0; i < rows.length; ++i) {
@@ -307,17 +355,797 @@ var editorPrefs = {
     diffMode: 'unified',
 };
 
-// Files whose text was edited: filename -> editor (see ZenEditor.create).
+// Changed files: filename -> change. A change is either an editor (see
+// ZenEditor.create) for files edited by hand, or a change made by applying a
+// patch (see createPatchChange). All have getText() (null for a removed file),
+// getOriginalText() (null for an added file), diffStats(), revert() and kind
+// ('modified', 'added' or 'removed'; editors are 'modified').
 var editedFiles = new Map();
 
+// The entries of the opened archive, and files added by patches (path -> entry).
+var archiveEntries = [];
+var addedEntries = new Map();
+var apiReportGeneration = 0;
+var apiReportResults = null;
+var apiReportBusy = false;
+var apiReportInitialized = false;
+var localeCoverageGeneration = 0;
+var localeCoverageResults = null;
+var localeCoverageBusy = false;
+var localeCoverageInitialized = false;
+
+function invalidateApiReport() {
+    apiReportGeneration++;
+    apiReportResults = null;
+    apiReportBusy = false;
+    var toggle = document.getElementById('api-report-toggle');
+    var panel = document.getElementById('api-panel');
+    if (toggle) {
+        toggle.textContent = 'APIs';
+        toggle.title = 'Detect WebExtension APIs and show local summaries';
+    }
+    if (panel && !panel.hidden) {
+        document.getElementById('api-list').textContent = '';
+        document.querySelector('#api-panel .api-panel-count').textContent = '';
+        document.getElementById('api-panel-status').textContent =
+            'Source changed. Select Rescan to refresh the detected APIs.';
+    }
+}
+
+function initializeApiReportPanel() {
+    if (apiReportInitialized) return;
+    apiReportInitialized = true;
+    var toggle = document.getElementById('api-report-toggle');
+    var panel = document.getElementById('api-panel');
+    var status = document.getElementById('api-panel-status');
+    toggle.onclick = function() {
+        panel.hidden = !panel.hidden;
+        toggle.setAttribute('aria-expanded', String(!panel.hidden));
+        if (!panel.hidden && !apiReportResults && !apiReportBusy) {
+            scanWebExtensionApis();
+        }
+    };
+    document.getElementById('api-panel-close').onclick = function() {
+        panel.hidden = true;
+        toggle.setAttribute('aria-expanded', 'false');
+    };
+    document.getElementById('api-rescan').onclick = scanWebExtensionApis;
+    status.textContent = 'Open this panel to scan the current source files.';
+}
+
+function scanWebExtensionApis() {
+    if (apiReportBusy) return;
+    apiReportGeneration++;
+    var generation = apiReportGeneration;
+    apiReportBusy = true;
+    apiReportResults = null;
+    var list = document.getElementById('api-list');
+    var status = document.getElementById('api-panel-status');
+    var panelCount = document.querySelector('#api-panel .api-panel-count');
+    list.textContent = '';
+    panelCount.textContent = '';
+
+    var items = [].filter.call(
+        document.querySelectorAll('#file-list li[data-filename]'),
+        function(item) {
+            return /\.(?:[cm]?js|jsx|tsx?|html?|xhtml)$/i.test(item.dataset.filename) &&
+                !item.classList.contains('file-removed');
+        }
+    );
+    var results = Object.create(null);
+    status.textContent = items.length ?
+        'Scanning ' + items.length + ' source file' + (items.length === 1 ? '' : 's') + '…' :
+        'No JavaScript, TypeScript, or HTML source files were found.';
+
+    function scanNext(index) {
+        if (generation !== apiReportGeneration) return;
+        if (index >= items.length) {
+            apiReportBusy = false;
+            apiReportResults = results;
+            renderWebExtensionApiReport(results);
+            return;
+        }
+        var item = items[index];
+        var filename = item.dataset.filename;
+        var edited = editedFiles.get(filename);
+        if (edited) {
+            var editedText = edited.getText();
+            if (typeof editedText === 'string') {
+                collectWebExtensionApiReferences(editedText, filename, results);
+            }
+            if (index % 8 === 0) {
+                status.textContent = 'Scanning ' + (index + 1) + ' of ' + items.length + ' source files…';
+            }
+            setTimeout(function() { scanNext(index + 1); }, 0);
+            return;
+        }
+        item.zipEntry.getData(new EfficientTextWriter(), function(text) {
+            if (generation !== apiReportGeneration) return;
+            collectWebExtensionApiReferences(text, filename, results);
+            if (index % 8 === 0) {
+                status.textContent = 'Scanning ' + (index + 1) + ' of ' + items.length + ' source files…';
+            }
+            setTimeout(function() { scanNext(index + 1); }, 0);
+        }, function() {
+            if (generation === apiReportGeneration) {
+                setTimeout(function() { scanNext(index + 1); }, 0);
+            }
+        });
+    }
+    scanNext(0);
+}
+
+function collectWebExtensionApiReferences(text, filename, results) {
+    // Gather static browser/chrome property chains, including optional chaining
+    // and quoted bracket notation. API names are indexed without root aliases.
+    var accessPattern = /\b(?:browser|chrome)((?:(?:\?\.|\.)\s*[A-Za-z_$][\w$]*|\s*\[\s*["'][A-Za-z_$][\w$]*["']\s*\])+)/g;
+    var propertyPattern = /(?:\?\.|\.)\s*([A-Za-z_$][\w$]*)|\[\s*["']([A-Za-z_$][\w$]*)["']\s*\]/g;
+    var match;
+    while ((match = accessPattern.exec(text)) !== null) {
+        var properties = [];
+        var propertyMatch;
+        propertyPattern.lastIndex = 0;
+        while ((propertyMatch = propertyPattern.exec(match[1])) !== null) {
+            properties.push(propertyMatch[1] || propertyMatch[2]);
+        }
+        if (!properties.length) continue;
+        var namespace = properties.shift();
+        var record = results[namespace] || (results[namespace] = {
+            files: new Set(),
+            roots: new Set(),
+            members: Object.create(null),
+        });
+        record.roots.add(match[0].indexOf('browser') === 0 ? 'browser' : 'chrome');
+        record.files.add(filename);
+        if (properties.length) {
+            var member = properties.join('.');
+            var memberRecord = record.members[member] || (record.members[member] = new Set());
+            memberRecord.add(filename);
+        }
+    }
+}
+
+function renderWebExtensionApiReport(results) {
+    var list = document.getElementById('api-list');
+    var status = document.getElementById('api-panel-status');
+    var panelCount = document.querySelector('#api-panel .api-panel-count');
+    var toggle = document.getElementById('api-report-toggle');
+    var namespaces = Object.keys(results).sort(function(a, b) { return a.localeCompare(b); });
+    list.textContent = '';
+    panelCount.textContent = namespaces.length ?
+        namespaces.length + ' namespace' + (namespaces.length === 1 ? '' : 's') : '';
+    toggle.textContent = 'APIs' + (namespaces.length ? ' ' + namespaces.length : '');
+    toggle.title = namespaces.length ?
+        namespaces.length + ' WebExtension API namespaces detected. Open the summary.' :
+        'No WebExtension API references detected. Open the scan report.';
+    status.textContent = namespaces.length ?
+        'Text scan of source references; comments or strings may match, and aliased or computed access may be missed. Summaries are local; MDN links open the full reference.' :
+        'No browser.* or chrome.* API references were detected in the scanned source files.';
+
+    namespaces.forEach(function(namespace) {
+        var record = results[namespace];
+        var api = Object.prototype.hasOwnProperty.call(WEBEXTENSION_API_CATALOG, namespace) ?
+            WEBEXTENSION_API_CATALOG[namespace] : null;
+        var details = document.createElement('details');
+        details.className = 'api-entry';
+        var heading = document.createElement('summary');
+        var title = document.createElement('span');
+        title.className = 'api-entry-title';
+        var rootNames = Array.from(record.roots).sort().join('/');
+        title.textContent = rootNames + '.' + namespace + (api && api.title ? ' · ' + api.title : '');
+        var usage = document.createElement('span');
+        usage.className = 'api-entry-count';
+        usage.textContent = record.files.size + ' file' + (record.files.size === 1 ? '' : 's');
+        heading.append(title, usage);
+        details.appendChild(heading);
+
+        var summary = document.createElement('p');
+        summary.className = 'api-entry-summary';
+        summary.textContent = api ? api.summary :
+            'This namespace is not in the bundled summary catalog; open the WebExtensions API index for details.';
+        details.appendChild(summary);
+
+        var memberNames = Object.keys(record.members).sort(function(a, b) { return a.localeCompare(b); });
+        if (memberNames.length) {
+            var memberList = document.createElement('ul');
+            memberList.className = 'api-member-list';
+            memberNames.forEach(function(member) {
+                var row = document.createElement('li');
+                row.className = 'api-member-row';
+                var copy = document.createElement('div');
+                copy.className = 'api-member-copy';
+                var path = document.createElement('code');
+                path.textContent = namespace + '.' + member;
+                var description = document.createElement('p');
+                var memberSummary = api && api.members &&
+                    Object.prototype.hasOwnProperty.call(api.members, member) ? api.members[member] : null;
+                if (!memberSummary && api && api.members) {
+                    var parentMember = member;
+                    while (!memberSummary && parentMember.indexOf('.') !== -1) {
+                        parentMember = parentMember.slice(0, parentMember.lastIndexOf('.'));
+                        if (Object.prototype.hasOwnProperty.call(api.members, parentMember)) {
+                            memberSummary = api.members[parentMember];
+                        }
+                    }
+                }
+                description.textContent = memberSummary ||
+                    'Referenced by the add-on; see the API reference for this member.';
+                copy.append(path, description);
+                var searchButton = document.createElement('button');
+                searchButton.type = 'button';
+                searchButton.textContent = 'Search';
+                searchButton.title = 'Find references to ' + namespace + '.' + member;
+                searchButton.onclick = function() {
+                    var filter = document.getElementById('file-filter');
+                    filter.value = '!api:' + namespace + '.' + member;
+                    checkAndApplyFilter(false);
+                    filter.dispatchEvent(new Event('change', {bubbles: true}));
+                    filter.focus();
+                };
+                row.append(copy, searchButton);
+                memberList.appendChild(row);
+            });
+            details.appendChild(memberList);
+        }
+
+        var docLink = document.createElement('a');
+        docLink.className = 'api-doc-link';
+        docLink.href = 'https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/' +
+            encodeURIComponent(namespace);
+        docLink.target = '_blank';
+        docLink.rel = 'noopener noreferrer';
+        docLink.textContent = 'MDN API reference';
+        details.appendChild(docLink);
+        list.appendChild(details);
+    });
+}
+
+function invalidateLocaleCoverage() {
+    ZenLocaleDiff.markStale();
+    localeCoverageGeneration++;
+    localeCoverageResults = null;
+    localeCoverageBusy = false;
+    document.getElementById('locale-export-json').disabled = true;
+    document.getElementById('locale-export-csv').disabled = true;
+    var toggle = document.getElementById('locale-report-toggle');
+    var panel = document.getElementById('locale-panel');
+    if (toggle) {
+        toggle.textContent = 'Locales';
+        toggle.title = 'Compare localized messages and show key coverage';
+    }
+    if (panel && !panel.hidden) {
+        document.getElementById('locale-list').textContent = '';
+        document.querySelector('#locale-panel .locale-panel-count').textContent = '';
+        document.getElementById('locale-reference').hidden = true;
+        document.getElementById('locale-reference-label').hidden = true;
+        document.getElementById('locale-panel-status').textContent =
+            'Source changed. Select Rescan to refresh locale coverage.';
+    }
+}
+
+function initializeLocaleCoveragePanel() {
+    if (localeCoverageInitialized) return;
+    localeCoverageInitialized = true;
+    var toggle = document.getElementById('locale-report-toggle');
+    var panel = document.getElementById('locale-panel');
+    toggle.onclick = function() {
+        panel.hidden = !panel.hidden;
+        toggle.setAttribute('aria-expanded', String(!panel.hidden));
+        if (!panel.hidden && !localeCoverageResults && !localeCoverageBusy) {
+            scanLocaleCoverage();
+        }
+    };
+    document.getElementById('locale-panel-close').onclick = function() {
+        panel.hidden = true;
+        toggle.setAttribute('aria-expanded', 'false');
+    };
+    document.getElementById('locale-rescan').onclick = scanLocaleCoverage;
+    document.getElementById('locale-export-json').onclick = function() {
+        exportLocaleCoverage('json');
+    };
+    document.getElementById('locale-export-csv').onclick = function() {
+        exportLocaleCoverage('csv');
+    };
+    document.getElementById('locale-reference').onchange = function() {
+        if (localeCoverageResults) {
+            renderLocaleCoverage(localeCoverageResults, this.value);
+            if (ZenLocaleDiff.isOpen()) ZenLocaleDiff.open(this.value, ZenLocaleDiff.currentLocale());
+        }
+    };
+}
+
+function scanLocaleCoverage() {
+    if (localeCoverageBusy) return;
+    localeCoverageGeneration++;
+    var generation = localeCoverageGeneration;
+    localeCoverageBusy = true;
+    localeCoverageResults = null;
+    var list = document.getElementById('locale-list');
+    var status = document.getElementById('locale-panel-status');
+    var referenceSelect = document.getElementById('locale-reference');
+    document.getElementById('locale-export-json').disabled = true;
+    document.getElementById('locale-export-csv').disabled = true;
+    list.textContent = '';
+    referenceSelect.hidden = true;
+
+    var candidates = [].filter.call(
+        document.querySelectorAll('#file-list li[data-filename]'),
+        function(item) {
+            var filename = item.dataset.filename;
+            return !item.classList.contains('file-removed') &&
+                (/(?:^|\/)manifest\.json$/i.test(filename) ||
+                    /(?:^|\/)_locales\/[^/]+\/messages\.json$/i.test(filename));
+        }
+    );
+    var manifests = candidates.filter(function(item) {
+        return /(?:^|\/)manifest\.json$/i.test(item.dataset.filename);
+    });
+    manifests.sort(function(a, b) {
+        var aPath = a.dataset.filename;
+        var bPath = b.dataset.filename;
+        if ((aPath.toLowerCase() === 'manifest.json') !== (bPath.toLowerCase() === 'manifest.json')) {
+            return aPath.toLowerCase() === 'manifest.json' ? -1 : 1;
+        }
+        return aPath.split('/').length - bPath.split('/').length;
+    });
+    var selectedManifest = manifests[0] || null;
+    var manifestPrefix = selectedManifest ?
+        selectedManifest.dataset.filename.slice(0, selectedManifest.dataset.filename.lastIndexOf('/') + 1) : '';
+    var localePrefix = manifestPrefix + '_locales/';
+    var items = [];
+    if (selectedManifest) items.push(selectedManifest);
+    candidates.forEach(function(item) {
+        if (/(?:^|\/)_locales\/[^/]+\/messages\.json$/i.test(item.dataset.filename) &&
+                (!selectedManifest || item.dataset.filename.toLowerCase().indexOf(localePrefix.toLowerCase()) === 0)) {
+            items.push(item);
+        }
+    });
+    var result = {
+        manifest: null,
+        locales: Object.create(null),
+        errors: [],
+    };
+    status.textContent = 'Reading the manifest and locale message files…';
+
+    function processFile(filename, text) {
+        if (/(?:^|\/)manifest\.json$/i.test(filename)) {
+            try {
+                var manifest = parseManifest(text);
+                // Prefer the root manifest if an archive contains nested packages.
+                if (!result.manifest || filename.toLowerCase() === 'manifest.json') {
+                    result.manifest = manifest;
+                    result.manifestFilename = filename;
+                }
+            } catch (e) {
+                result.errors.push({file: filename, message: 'Invalid manifest JSON: ' + e.message});
+            }
+            return;
+        }
+
+        var localeMatch = /(?:^|\/)_locales\/([^/]+)\/messages\.json$/i.exec(filename);
+        if (!localeMatch) return;
+        var locale = localeMatch[1];
+        try {
+            var messages = JSON.parse(text);
+            if (!messages || typeof messages !== 'object' || Array.isArray(messages)) {
+                throw new Error('Expected a JSON object of message keys.');
+            }
+            var messageMap = Object.create(null);
+            var invalidKeys = [];
+            Object.keys(messages).forEach(function(key) {
+                // @@ names are reserved browser-defined messages, not translations
+                // that each locale needs to provide.
+                if (key.indexOf('@@') === 0) return;
+                var normalizedKey = key.toLowerCase();
+                var value = messages[key];
+                var isValid = value && typeof value === 'object' &&
+                    !Array.isArray(value) && typeof value.message === 'string';
+                if (!isValid) invalidKeys.push(key);
+                if (!Object.prototype.hasOwnProperty.call(messageMap, normalizedKey)) {
+                    messageMap[normalizedKey] = {
+                        key: key,
+                        message: isValid ? value.message : '',
+                        valid: !!isValid,
+                        // Copied to new keys added from the locale diff.
+                        description: isValid && typeof value.description === 'string' ? value.description : undefined,
+                    };
+                }
+            });
+            var normalizedLocale = normalizeLocaleCode(locale);
+            if (result.locales[normalizedLocale]) {
+                result.errors.push({file: filename, message: 'Duplicate locale directory: ' + locale});
+                return;
+            }
+            result.locales[normalizedLocale] = {
+                name: locale,
+                filename: filename,
+                messages: messageMap,
+                invalidKeys: invalidKeys,
+            };
+        } catch (e) {
+            result.errors.push({file: filename, message: 'Invalid messages.json: ' + e.message});
+        }
+    }
+
+    function readNext(index) {
+        if (generation !== localeCoverageGeneration) return;
+        if (index >= items.length) {
+            localeCoverageBusy = false;
+            localeCoverageResults = result;
+            renderLocaleCoverage(result);
+            // An open locale diff shows the new scan.
+            ZenLocaleDiff.refresh();
+            return;
+        }
+        var item = items[index];
+        var filename = item.dataset.filename;
+        var edited = editedFiles.get(filename);
+        if (edited) {
+            var editedText = edited.getText();
+            if (typeof editedText === 'string') processFile(filename, editedText);
+            if (index % 4 === 0) {
+                status.textContent = 'Reading locale data ' + (index + 1) + ' of ' + items.length + '…';
+            }
+            setTimeout(function() { readNext(index + 1); }, 0);
+            return;
+        }
+        item.zipEntry.getData(new EfficientTextWriter(), function(text) {
+            if (generation !== localeCoverageGeneration) return;
+            processFile(filename, text);
+            if (index % 4 === 0) {
+                status.textContent = 'Reading locale data ' + (index + 1) + ' of ' + items.length + '…';
+            }
+            setTimeout(function() { readNext(index + 1); }, 0);
+        });
+    }
+    readNext(0);
+}
+
+function normalizeLocaleCode(locale) {
+    return (locale || '').replace(/-/g, '_').toLowerCase();
+}
+
+function buildLocaleComparison(result, referenceKey) {
+    var reference = result.locales[referenceKey];
+    var referenceKeys = Object.keys(reference.messages).sort(function(a, b) {
+        return reference.messages[a].key.localeCompare(reference.messages[b].key);
+    });
+    var locales = Object.keys(result.locales).sort(function(a, b) {
+        return result.locales[a].name.localeCompare(result.locales[b].name);
+    });
+    var defaultLocale = result.manifest && typeof result.manifest.default_locale === 'string' ?
+        result.manifest.default_locale : '';
+    var report = {
+        generatedAt: new Date().toISOString(),
+        manifest: {
+            file: result.manifestFilename || null,
+            defaultLocale: defaultLocale || null,
+            name: result.manifest && typeof result.manifest.name === 'string' ? result.manifest.name : null,
+            version: result.manifest && typeof result.manifest.version === 'string' ? result.manifest.version : null,
+        },
+        referenceLocale: {
+            code: referenceKey,
+            name: reference.name,
+            file: reference.filename,
+            keyCount: referenceKeys.length,
+        },
+        locales: [],
+        errors: result.errors.slice(),
+    };
+
+    locales.forEach(function(localeKey) {
+        var locale = result.locales[localeKey];
+        var missing = [];
+        var extra = [];
+        var changed = [];
+        var identical = 0;
+        referenceKeys.forEach(function(key) {
+            var referenceMessage = reference.messages[key];
+            var localeMessage = locale.messages[key];
+            if (!localeMessage) {
+                missing.push({
+                    key: referenceMessage.key,
+                    referenceMessage: referenceMessage.valid ? referenceMessage.message : null,
+                    localeMessage: null,
+                    referencePresent: true,
+                    localePresent: false,
+                    referenceValid: referenceMessage.valid,
+                    localeValid: null,
+                });
+            } else if (referenceMessage.valid && localeMessage.valid) {
+                if (localeMessage.message === referenceMessage.message) {
+                    if (localeKey !== referenceKey) identical++;
+                } else {
+                    changed.push({
+                        key: referenceMessage.key,
+                        referenceMessage: referenceMessage.message,
+                        localeMessage: localeMessage.message,
+                        referencePresent: true,
+                        localePresent: true,
+                        referenceValid: true,
+                        localeValid: true,
+                    });
+                }
+            }
+        });
+        Object.keys(locale.messages).forEach(function(key) {
+            if (!Object.prototype.hasOwnProperty.call(reference.messages, key)) {
+                var message = locale.messages[key];
+                extra.push({
+                    key: message.key,
+                    referenceMessage: null,
+                    localeMessage: message.valid ? message.message : null,
+                    referencePresent: false,
+                    localePresent: true,
+                    referenceValid: null,
+                    localeValid: message.valid,
+                });
+            }
+        });
+        extra.sort(function(a, b) { return a.key.localeCompare(b.key); });
+        changed.sort(function(a, b) { return a.key.localeCompare(b.key); });
+        var present = referenceKeys.length - missing.length;
+        report.locales.push({
+            code: localeKey,
+            name: locale.name,
+            file: locale.filename,
+            presentKeyCount: present,
+            referenceKeyCount: referenceKeys.length,
+            // Rounded down, so that 100% only means that no key is missing
+            // (e.g. 327 of 328 keys is 99%, not 100%).
+            coveragePercent: referenceKeys.length ? Math.floor(present / referenceKeys.length * 100) : null,
+            missingKeys: missing,
+            localeOnlyKeys: extra,
+            changedMessages: changed,
+            identicalTextCount: identical,
+            invalidKeys: locale.invalidKeys.slice().sort(function(a, b) { return a.localeCompare(b); }),
+        });
+    });
+    return report;
+}
+
+function renderLocaleCoverage(result, requestedReference) {
+    var list = document.getElementById('locale-list');
+    var status = document.getElementById('locale-panel-status');
+    var panelCount = document.querySelector('#locale-panel .locale-panel-count');
+    var toggle = document.getElementById('locale-report-toggle');
+    var referenceSelect = document.getElementById('locale-reference');
+    var localeKeys = Object.keys(result.locales).sort(function(a, b) {
+        return result.locales[a].name.localeCompare(result.locales[b].name);
+    });
+    list.textContent = '';
+    panelCount.textContent = localeKeys.length + ' locale' + (localeKeys.length === 1 ? '' : 's');
+    toggle.textContent = 'Locales ' + localeKeys.length;
+    toggle.title = localeKeys.length ?
+        'Compare ' + localeKeys.length + ' locales and inspect key coverage.' :
+        'No locale message files were found.';
+
+    var defaultLocale = result.manifest && typeof result.manifest.default_locale === 'string' ?
+        result.manifest.default_locale : '';
+    var defaultKey = normalizeLocaleCode(defaultLocale);
+    var selectedKey = requestedReference && result.locales[normalizeLocaleCode(requestedReference)] ?
+        normalizeLocaleCode(requestedReference) :
+        (result.locales[defaultKey] ? defaultKey : localeKeys[0]);
+
+    referenceSelect.textContent = '';
+    localeKeys.forEach(function(localeKey) {
+        var option = document.createElement('option');
+        option.value = localeKey;
+        option.textContent = result.locales[localeKey].name +
+            (localeKey === defaultKey ? ' (manifest default)' : '');
+        referenceSelect.appendChild(option);
+    });
+    referenceSelect.value = selectedKey || '';
+    referenceSelect.hidden = localeKeys.length < 2;
+    document.getElementById('locale-reference-label').hidden = localeKeys.length < 2;
+    document.getElementById('locale-export-json').disabled = false;
+    document.getElementById('locale-export-csv').disabled = false;
+
+    if (!localeKeys.length) {
+        status.textContent = 'No valid _locales/*/messages.json files were found.';
+        appendLocaleReportErrors(list, result.errors);
+        return;
+    }
+
+    var warning = '';
+    if (!defaultLocale) {
+        warning = 'Manifest default_locale is missing; using ' + result.locales[selectedKey].name + ' as the reference. ';
+    } else if (!result.locales[defaultKey]) {
+        warning = 'Manifest default_locale ' + defaultLocale + ' has no matching messages.json; using ' +
+            result.locales[selectedKey].name + ' as the reference. ';
+    }
+    status.textContent = warning +
+        'Select a locale to compare it with ' + result.locales[selectedKey].name + ' side by side.';
+    appendLocaleReportErrors(list, result.errors);
+
+    var report = buildLocaleComparison(result, selectedKey);
+    var activeLocale = ZenLocaleDiff.currentLocale();
+    report.locales.forEach(function(localeReport) {
+        var localeKey = localeReport.code;
+        // Each locale opens its diff with the reference in the main panel
+        // (see locale-diff.js), like a changed file in VS Code.
+        var item = document.createElement('li');
+        item.className = 'locale-entry';
+        item.dataset.locale = localeKey;
+        item.tabIndex = 0;
+        item.setAttribute('role', 'button');
+        item.classList.toggle('is-reference', localeKey === selectedKey);
+        item.classList.toggle('is-active', localeKey === activeLocale);
+        item.title = localeKey === selectedKey ?
+            'The reference locale. Click to see its messages.' :
+            'Compare ' + localeReport.name + ' with ' + result.locales[selectedKey].name + ' side by side';
+
+        var heading = document.createElement('div');
+        heading.className = 'locale-entry-heading';
+        var name = document.createElement('span');
+        name.className = 'locale-name';
+        name.textContent = localeReport.name + (localeKey === selectedKey ? ' \u00b7 reference' : '');
+        var coverage = document.createElement('span');
+        coverage.className = 'locale-coverage';
+        coverage.textContent = localeReport.coveragePercent === null ? '\u2014' : localeReport.coveragePercent + '%';
+        heading.append(name, coverage);
+        item.appendChild(heading);
+
+        var progress = document.createElement('progress');
+        progress.className = 'locale-progress';
+        progress.max = 100;
+        progress.value = localeReport.coveragePercent === null ? 0 : localeReport.coveragePercent;
+        progress.setAttribute('aria-label', localeReport.coveragePercent === null ?
+            'No reference keys' : localeReport.coveragePercent + '% key coverage');
+        item.appendChild(progress);
+
+        var stats = document.createElement('p');
+        stats.className = 'locale-stats';
+        var parts = [];
+        // Problems first (\u2715), then keys to review (= same text as the
+        // reference, + only in this locale), like in the locale diff.
+        var referenceName = result.locales[selectedKey].name;
+        if (localeReport.missingKeys.length) {
+            parts.push(['missing', '\u2715 ' + localeReport.missingKeys.length + ' missing',
+                'No entry in this locale: users see the ' + referenceName + ' text']);
+        }
+        if (localeReport.invalidKeys.length) {
+            parts.push(['invalid', '\u2715 ' + localeReport.invalidKeys.length + ' invalid',
+                'Entries without a string "message" value']);
+        }
+        if (localeKey !== selectedKey && localeReport.identicalTextCount) {
+            parts.push(['untranslated', '= ' + localeReport.identicalTextCount + ' same as ' + referenceName,
+                'The entry exists but its text is the same as ' + referenceName +
+                ': fine for names, or not translated yet']);
+        }
+        if (localeReport.localeOnlyKeys.length) {
+            parts.push(['extra', '+ ' + localeReport.localeOnlyKeys.length + ' only here',
+                'Keys that ' + referenceName + ' does not have']);
+        }
+        if (!parts.length) {
+            parts.push(['complete', localeKey === selectedKey ?
+                localeReport.referenceKeyCount + ' keys' : 'Complete']);
+        }
+        parts.forEach(function(part, i) {
+            if (i) stats.appendChild(document.createTextNode(' \u00b7 '));
+            var span = document.createElement('span');
+            span.className = 'locale-stat-' + part[0];
+            span.textContent = part[1];
+            if (part[2]) span.title = part[2];
+            stats.appendChild(span);
+        });
+        item.appendChild(stats);
+
+        item.onclick = function() {
+            ZenLocaleDiff.open(selectedKey, localeKey);
+        };
+        item.onkeydown = function(event) {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                item.onclick();
+            }
+        };
+        list.appendChild(item);
+    });
+}
+
+function exportLocaleCoverage(format) {
+    if (!localeCoverageResults) return;
+    var referenceKey = document.getElementById('locale-reference').value;
+    if (!referenceKey || !localeCoverageResults.locales[referenceKey]) return;
+    var report = buildLocaleComparison(localeCoverageResults, referenceKey);
+    var extensionName = archiveBaseName().replace(/[^a-z0-9._-]+/gi, '-') || 'extension';
+    var referenceName = normalizeLocaleCode(report.referenceLocale.name).replace(/[^a-z0-9_-]+/g, '-') || 'reference';
+    var filename = extensionName + '-locale-report-vs-' + referenceName + '.' + format;
+
+    if (format === 'json') {
+        downloadTextFile(JSON.stringify(report, null, 2), filename, 'application/json;charset=utf-8');
+        return;
+    }
+
+    var rows = [[
+        'recordType', 'locale', 'referenceLocale', 'coveragePercent', 'presentKeys', 'referenceKeyCount',
+        'missingKeyCount', 'changedMessageCount', 'localeOnlyKeyCount', 'identicalTextCount', 'invalidKeyCount',
+        'key', 'referenceMessage', 'localeMessage', 'details',
+    ]];
+    function addRow(type, locale, key, referenceMessage, localeMessage, details) {
+        rows.push([
+            type, locale || '', report.referenceLocale.name, '', '', report.referenceLocale.keyCount,
+            '', '', '', '', '', key || '', referenceMessage == null ? '' : referenceMessage,
+            localeMessage == null ? '' : localeMessage, details || '',
+        ]);
+    }
+    report.locales.forEach(function(locale) {
+        rows.push([
+            'summary', locale.name, report.referenceLocale.name, locale.coveragePercent === null ? '' : locale.coveragePercent,
+            locale.presentKeyCount, locale.referenceKeyCount, locale.missingKeys.length,
+            locale.changedMessages.length, locale.localeOnlyKeys.length, locale.identicalTextCount, locale.invalidKeys.length,
+            '', '', '', '',
+        ]);
+        locale.missingKeys.forEach(function(entry) {
+            addRow('missing-key', locale.name, entry.key, entry.referenceMessage, '',
+                entry.referenceValid ? '' : 'Reference message has no valid string value');
+        });
+        locale.changedMessages.forEach(function(entry) {
+            addRow('changed-message', locale.name, entry.key,
+                entry.referenceMessage, entry.localeMessage, '');
+        });
+        locale.localeOnlyKeys.forEach(function(entry) {
+            addRow('locale-only-key', locale.name, entry.key, '', entry.localeMessage,
+                entry.localeValid ? '' : 'Locale message has no valid string value');
+        });
+        locale.invalidKeys.forEach(function(key) {
+            addRow('invalid-message', locale.name, key, '', '', 'Message field is not a string');
+        });
+    });
+    report.errors.forEach(function(error) {
+        addRow('error', '', '', '', '', error.file + ': ' + error.message);
+    });
+    var csv = rows.map(function(row) {
+        return row.map(function(value) {
+            return '"' + String(value).replace(/"/g, '""') + '"';
+        }).join(',');
+    }).join('\r\n');
+    downloadTextFile('\uFEFF' + csv, filename, 'text/csv;charset=utf-8');
+}
+
+function appendLocaleReportErrors(list, errors) {
+    errors.forEach(function(error) {
+        var item = document.createElement('li');
+        item.className = 'locale-entry locale-error';
+        item.textContent = error.file + ': ' + error.message;
+        list.appendChild(item);
+    });
+}
+
+function changeKind(change) {
+    return change && change.kind || 'modified';
+}
+
+function markFileListItem(filename, change) {
+    var li = getFileListItem(filename);
+    if (!li) return;
+    var kind = change ? changeKind(change) : null;
+    li.classList.toggle('file-edited', !!change);
+    li.classList.toggle('file-added', kind === 'added');
+    li.classList.toggle('file-removed', kind === 'removed');
+}
+
 function setFileEdited(entry, editor) {
+    // A file added by a patch stays added when its edits are reverted.
+    if (!editor && entry._addedChange) editor = entry._addedChange;
+    // ...and stays "added" (not "modified") while it is edited.
+    if (editor && entry._addedChange && editor !== entry._addedChange && !editor.kind) editor.kind = 'added';
+    // This also runs when an edited file is only shown again: the API and
+    // locale scans are out of date only when the content really changed.
+    var content = editor ? (editor.binary ? editor.getBytes() : editor.getText()) : undefined;
+    if (editedFiles.get(entry.filename) !== editor || entry._lastEditedContent !== content) {
+        entry._lastEditedContent = content;
+        invalidateApiReport();
+        invalidateLocaleCoverage();
+        ZenReview.invalidate();
+    }
     if (editor) {
         editedFiles.set(entry.filename, editor);
     } else {
         editedFiles.delete(entry.filename);
     }
-    var li = getFileListItem(entry.filename);
-    if (li) li.classList.toggle('file-edited', !!editor);
+    markFileListItem(entry.filename, editor);
     var button = document.getElementById('download-edited-zip');
     button.hidden = editedFiles.size === 0;
     button.title = 'Download a new zip file that includes your edits to ' +
@@ -368,24 +1196,31 @@ function renderChangesPanel() {
     var totalAdded = 0;
     var totalRemoved = 0;
     filenames.forEach(function(filename) {
-        var stats = editedFiles.get(filename).diffStats();
+        var change = editedFiles.get(filename);
+        var kind = changeKind(change);
+        var stats = change.diffStats();
         totalAdded += stats.added;
         totalRemoved += stats.removed;
         var slash = filename.lastIndexOf('/');
         var row = document.createElement('li');
-        row.className = 'change-row';
+        row.className = 'change-row is-' + kind;
         row.classList.toggle('is-selected', filename === selectedName);
-        row.title = filename + ' (modified): ' + stats.added + ' line' + (stats.added === 1 ? '' : 's') +
+        row.title = filename + ' (' + kind + '): ' + stats.added + ' line' + (stats.added === 1 ? '' : 's') +
             ' added, ' + stats.removed + ' removed. Click to view the changes.';
         row.innerHTML =
-            '<span class="change-status">M</span>' +
+            '<span class="change-status"></span>' +
             '<span class="change-name"><span class="change-file"></span><span class="change-dir"></span></span>' +
             '<span class="change-stats"><span class="stat-add"></span><span class="stat-del"></span></span>' +
             '<button class="change-revert" title="Discard changes"></button>';
+        row.querySelector('.change-status').textContent = {modified: 'M', added: 'A', removed: 'D'}[kind];
         row.querySelector('.change-file').textContent = filename.slice(slash + 1);
         row.querySelector('.change-dir').textContent = slash === -1 ? '' : filename.slice(0, slash);
-        row.querySelector('.stat-add').textContent = '+' + stats.added;
-        row.querySelector('.stat-del').textContent = '\u2212' + stats.removed;
+        if (change.binary) {
+            row.querySelector('.change-stats').textContent = 'binary';
+        } else {
+            row.querySelector('.stat-add').textContent = '+' + stats.added;
+            row.querySelector('.stat-del').textContent = '\u2212' + stats.removed;
+        }
         row.querySelector('.change-revert').onclick = function(event) {
             event.stopPropagation();
             revertFile(filename);
@@ -398,8 +1233,15 @@ function renderChangesPanel() {
         };
         list.appendChild(row);
     });
-    panel.querySelector('.changes-total').innerHTML =
-        '<span class="stat-add">+' + totalAdded + '</span> <span class="stat-del">\u2212' + totalRemoved + '</span>';
+    var totalElem = panel.querySelector('.changes-total');
+    totalElem.textContent = '';
+    var addedElem = document.createElement('span');
+    addedElem.className = 'stat-add';
+    addedElem.textContent = '+' + totalAdded;
+    var removedElem = document.createElement('span');
+    removedElem.className = 'stat-del';
+    removedElem.textContent = '\u2212' + totalRemoved;
+    totalElem.append(addedElem, ' ', removedElem);
 
     // Mark folders that contain edited files, like an editor's source control view.
     var editedFolders = new Set();
@@ -456,7 +1298,13 @@ function downloadEditedZip() {
             var entry = items[i++];
             var editor = editedFiles.get(entry.filename);
             if (editor) {
-                writer.add(entry.filename, new zip.TextReader(editor.getText()), addNext);
+                var content = editor.binary ? editor.getBytes() : editor.getText();
+                if (content === null) {
+                    addNext(); // Removed by a patch.
+                    return;
+                }
+                writer.add(entry.filename, editor.binary ?
+                    new zip.BlobReader(new Blob([content])) : new zip.TextReader(content), addNext);
                 return;
             }
             entry.getData(new zip.BlobWriter(), function(blob) {
@@ -465,6 +1313,400 @@ function downloadEditedZip() {
         })();
     }, done);
 }
+
+// ---- Patches (git-style unified diffs, see lib/jsdiff.js)
+
+// The original text of a file in the archive.
+function readEntryText(entry) {
+    if (entry._originalEntry) return readEntryText(entry._originalEntry);
+    if (entry._isAdded) return Promise.resolve(null);
+    if (!entry._rawText) {
+        entry._rawText = new Promise(function(resolve) {
+            entry.getData(new EfficientTextWriter(), resolve);
+        });
+    }
+    return entry._rawText;
+}
+
+// The original bytes of a file in the archive (for files replaced by a
+// binary patch, the bytes of the replaced file).
+function readEntryBytes(entry) {
+    var original = entry._originalEntry || entry;
+    if (original._isAdded) return Promise.resolve(null);
+    if (!original._rawBytes) {
+        original._rawBytes = new Promise(function(resolve) {
+            original.getData(new Uint8ArrayWriter(), resolve);
+        });
+    }
+    return original._rawBytes;
+}
+
+// The current bytes of a file: with edits and patches, or null if removed.
+function readCurrentBytes(entry) {
+    var change = editedFiles.get(entry.filename);
+    if (change && change.binary) return Promise.resolve(change.getBytes());
+    if (change) {
+        var text = change.getText();
+        return Promise.resolve(text === null ? null : new TextEncoder().encode(text));
+    }
+    return readEntryBytes(entry);
+}
+
+// The current text of a file: with edits and patches, or null if removed.
+function readCurrentText(entry) {
+    var change = editedFiles.get(entry.filename);
+    if (change) return Promise.resolve(change.getText());
+    return readEntryText(entry);
+}
+
+function downloadTextFile(text, filename, type) {
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([text], {type: type || 'text/plain'}));
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function() { URL.revokeObjectURL(a.href); }, 60000);
+}
+
+function archiveBaseName() {
+    var name = document.getElementById('download-link').download || 'extension.zip';
+    return name.replace(/\.(zip|xpi)$/i, '');
+}
+
+// Downloads all changes (edits and applied patches) as a Git-style patch,
+// relative to the original files of the archive (like `git diff`).
+function downloadChangesPatch() {
+    var filenames = Array.from(editedFiles.keys()).sort(function(a, b) { return a.localeCompare(b); });
+    Promise.all(filenames.map(function(filename) {
+        var change = editedFiles.get(filename);
+        var entry = (getFileListItem(filename) || {}).zipEntry || addedEntries.get(filename);
+        if (change.binary) {
+            return (entry ? readEntryBytes(entry) : Promise.resolve(null)).then(function(original) {
+                return {path: filename, binary: true, oldBytes: original, newBytes: change.getBytes()};
+            });
+        }
+        return (entry ? readEntryText(entry) : Promise.resolve(change.getOriginalText()))
+            .then(function(original) {
+                return {path: filename, oldText: original, newText: change.getText()};
+            });
+    })).then(function(files) {
+        return ZenPatch.createGitPatchAsync(files);
+    }).then(function(patch) {
+        if (!patch) {
+            alert('There are no changes to save as a patch.');
+            return;
+        }
+        downloadTextFile(patch, archiveBaseName() + '-changes.patch', 'text/x-diff');
+    }).catch(function(error) {
+        alert('Could not create the patch: ' + (error && error.message || error));
+    });
+}
+
+// A change made by a patch to a file that has no editor (yet).
+function createPatchChange(entry, kind, originalText, newText) {
+    return {
+        kind: kind,
+        getText: function() { return newText; },
+        getOriginalText: function() { return originalText; },
+        isModified: function() { return true; },
+        diffStats: function() {
+            if (kind === 'removed') return {added: 0, removed: ZenEditor.diffStats(originalText || '', '').removed};
+            if (kind === 'added') return {added: ZenEditor.diffStats('', newText || '').added, removed: 0};
+            return ZenEditor.diffStats(originalText || '', newText || '');
+        },
+        revert: function() {
+            if (kind === 'added') {
+                delete entry._addedChange;
+                addedEntries.delete(entry.filename);
+                editedFiles.delete(entry.filename);
+                rebuildFileTree();
+                return;
+            }
+            delete entry._patchedText;
+            setFileEdited(entry, null);
+        },
+    };
+}
+
+// Files of the archive whose content was replaced by a binary patch (path -> entry).
+var replacedEntries = new Map();
+
+// A change made by a binary patch: kind 'modified', 'added' or 'removed'.
+function createBinaryChange(entry, kind, newBytes) {
+    return {
+        kind: kind,
+        binary: true,
+        getBytes: function() { return newBytes; },
+        getText: function() { return kind === 'removed' ? null : undefined; },
+        getOriginalText: function() { return null; },
+        isModified: function() { return true; },
+        diffStats: function() { return {added: 0, removed: 0}; },
+        revert: function() {
+            if (kind === 'added') {
+                delete entry._addedChange;
+                addedEntries.delete(entry.filename);
+                editedFiles.delete(entry.filename);
+                rebuildFileTree();
+            } else if (kind === 'modified') {
+                replacedEntries.delete(entry.filename);
+                editedFiles.delete(entry.filename);
+                rebuildFileTree();
+            } else {
+                setFileEdited(entry, null);
+            }
+        },
+    };
+}
+
+// A file created by a patch (text or bytes), usable like a file of the archive.
+function createAddedEntry(path, content) {
+    var bytes = typeof content === 'string' ? new TextEncoder().encode(content) : content;
+    return {
+        filename: path,
+        directory: false,
+        uncompressedSize: bytes.length,
+        compressedSize: bytes.length,
+        _isAdded: true,
+        getData: function(writer, onend) {
+            writer.init(function() {
+                writer.writeUint8Array(bytes, function() {
+                    writer.getData(onend);
+                });
+            });
+        },
+    };
+}
+
+function rebuildFileTree() {
+    var entries = archiveEntries.map(function(entry) {
+        return replacedEntries.get(entry.filename) || entry;
+    });
+    handleZipEntries(entries.concat(Array.from(addedEntries.values())), {keepState: true});
+}
+
+// Sets the text of an existing file to the result of a patch.
+function setPatchedText(entry, originalText, newText) {
+    // If the file is open in an editor, the editor takes the new text.
+    if (entry._setPatchedText && entry._setPatchedText(newText)) return;
+    entry._patchedText = newText;
+    setFileEdited(entry, createPatchChange(entry, 'modified', originalText, newText));
+}
+
+// Finds the file a patch refers to, also without a leading directory (like `patch -p1`).
+function findPatchTarget(path) {
+    if (!path) return null;
+    var candidates = [path, path.replace(/^[^/]+\//, '')];
+    for (var i = 0; i < candidates.length; ++i) {
+        var li = getFileListItem(candidates[i]);
+        if (li && li.zipEntry) return li.zipEntry;
+    }
+    return null;
+}
+
+// Applies a patch (e.g. from `git diff`) to the opened add-on, like `git apply`.
+function applyPatchText(patchText, patchName) {
+    var fileChanges;
+    try {
+        fileChanges = ZenPatch.parse(patchText);
+    } catch (e) {
+        showPatchReport(patchName, [{path: patchName, ok: false, message: 'This file is not a valid patch: ' + e.message}]);
+        return;
+    }
+    if (!fileChanges.length) {
+        showPatchReport(patchName, [{path: patchName, ok: false, message: 'No file changes found in this patch.'}]);
+        return;
+    }
+    var results = [];
+    var treeChanged = false;
+    var queue = fileChanges.slice();
+    (function next() {
+        var change = queue.shift();
+        if (!change) {
+            if (treeChanged) rebuildFileTree();
+            showPatchReport(patchName, results);
+            return;
+        }
+        applyOneFileChange(change).then(function(result) {
+            if (result.treeChanged) treeChanged = true;
+            results.push(result);
+            next();
+        }, function(error) {
+            results.push({path: change.newPath || change.oldPath, ok: false, message: String(error)});
+            next();
+        });
+    })();
+}
+
+function applyOneFileChange(change) {
+    var path = change.newPath || change.oldPath;
+    if (change.kind === 'binary') {
+        return Promise.resolve({path: path, ok: false,
+            message: 'The patch does not contain the binary data of this file. Create the patch with \u201cgit diff --binary\u201d.'});
+    }
+    if (change.binary) {
+        return applyBinaryChange(change);
+    }
+    if (change.kind === 'create') {
+        if (findPatchTarget(change.newPath)) {
+            return Promise.resolve({path: path, ok: false, message: 'Not created: a file with this name already exists.'});
+        }
+        var created = ZenPatch.apply('', change.patch);
+        if (!created) return Promise.resolve({path: path, ok: false, message: 'Not created: the patch is invalid.'});
+        var addedEntry = createAddedEntry(change.newPath, created.text);
+        addedEntry._addedChange = createPatchChange(addedEntry, 'added', null, created.text);
+        addedEntries.set(change.newPath, addedEntry);
+        editedFiles.set(change.newPath, addedEntry._addedChange);
+        return Promise.resolve({path: path, ok: true, kind: 'added', treeChanged: true});
+    }
+    var entry = findPatchTarget(change.oldPath);
+    if (!entry) {
+        return Promise.resolve({path: change.oldPath, ok: false, message: 'Not found in this add-on.'});
+    }
+    return Promise.all([readEntryText(entry), readCurrentText(entry)]).then(function(texts) {
+        var original = texts[0];
+        var current = texts[1];
+        if (current === null) {
+            return {path: entry.filename, ok: false, message: 'Not applied: this file was removed.'};
+        }
+        var applied = ZenPatch.apply(current, change.patch);
+        if (!applied) {
+            return {path: entry.filename, ok: false, message: 'Not applied: the file does not match the patch (it may be a different version).'};
+        }
+        var note = applied.fuzz ? ' (with fuzz ' + applied.fuzz + ')' : '';
+        if (change.kind === 'delete') {
+            if (applied.text !== '') {
+                return {path: entry.filename, ok: false, message: 'Not removed: the file has more content than the patch removes.'};
+            }
+            setFileEdited(entry, createPatchChange(entry, 'removed', original, null));
+            return {path: entry.filename, ok: true, kind: 'removed', note: note};
+        }
+        if (change.kind === 'rename') {
+            if (findPatchTarget(change.newPath)) {
+                return {path: change.newPath, ok: false, message: 'Not renamed: a file with the new name already exists.'};
+            }
+            setFileEdited(entry, createPatchChange(entry, 'removed', original, null));
+            var renamed = createAddedEntry(change.newPath, applied.text);
+            renamed._addedChange = createPatchChange(renamed, 'added', null, applied.text);
+            addedEntries.set(change.newPath, renamed);
+            editedFiles.set(change.newPath, renamed._addedChange);
+            return {path: entry.filename + ' \u2192 ' + change.newPath, ok: true, kind: 'renamed', note: note, treeChanged: true};
+        }
+        setPatchedText(entry, original, applied.text);
+        return {path: entry.filename, ok: true, kind: 'modified', note: note};
+    });
+}
+
+// Applies a Git binary patch (literal or delta) to a file, like `git apply`.
+function applyBinaryChange(change) {
+    var path = change.newPath || change.oldPath;
+    if (change.kind === 'create') {
+        if (findPatchTarget(change.newPath)) {
+            return Promise.resolve({path: path, ok: false, message: 'Not created: a file with this name already exists.'});
+        }
+        var created = ZenPatch.applyBinary(null, change);
+        if (created.error) return Promise.resolve({path: path, ok: false, message: 'Not created: ' + created.error + '.'});
+        addBinaryFile(change.newPath, created.bytes);
+        return Promise.resolve({path: path, ok: true, kind: 'added (binary)', treeChanged: true});
+    }
+    var entry = findPatchTarget(change.oldPath);
+    if (!entry) {
+        return Promise.resolve({path: change.oldPath, ok: false, message: 'Not found in this add-on.'});
+    }
+    return readCurrentBytes(entry).then(function(current) {
+        if (current === null) {
+            return {path: entry.filename, ok: false, message: 'Not applied: this file was removed.'};
+        }
+        var result = ZenPatch.applyBinary(current, change);
+        if (result.error) {
+            return {path: entry.filename, ok: false, message: 'Not applied: ' + result.error + '.'};
+        }
+        if (change.kind === 'delete') {
+            setFileEdited(entry, createBinaryChange(entry, 'removed', null));
+            return {path: entry.filename, ok: true, kind: 'removed (binary)'};
+        }
+        if (change.kind === 'rename') {
+            if (findPatchTarget(change.newPath)) {
+                return {path: change.newPath, ok: false, message: 'Not renamed: a file with the new name already exists.'};
+            }
+            setFileEdited(entry, createBinaryChange(entry, 'removed', null));
+            addBinaryFile(change.newPath, result.bytes);
+            return {path: entry.filename + ' \u2192 ' + change.newPath, ok: true, kind: 'renamed (binary)', treeChanged: true};
+        }
+        var original = entry._originalEntry || entry;
+        var replacement = createAddedEntry(original.filename, result.bytes);
+        replacement._isAdded = false;
+        replacement._originalEntry = original;
+        replacedEntries.set(original.filename, replacement);
+        editedFiles.set(original.filename, createBinaryChange(replacement, 'modified', result.bytes));
+        return {path: entry.filename, ok: true, kind: 'modified (binary)', treeChanged: true};
+    });
+}
+
+function addBinaryFile(path, bytes) {
+    var addedEntry = createAddedEntry(path, bytes);
+    addedEntry._addedChange = createBinaryChange(addedEntry, 'added', bytes);
+    addedEntries.set(path, addedEntry);
+    editedFiles.set(path, addedEntry._addedChange);
+}
+
+function showPatchReport(patchName, results) {
+    var dialog = document.createElement('dialog');
+    dialog.className = 'patch-report';
+    var applied = results.filter(function(r) { return r.ok; }).length;
+    var title = document.createElement('h3');
+    title.textContent = applied === results.length ?
+        'Patch applied' : applied ? 'Patch partly applied' : 'Patch not applied';
+    dialog.appendChild(title);
+    var summary = document.createElement('p');
+    summary.textContent = patchName + ': ' + applied + ' of ' + results.length + ' file' +
+        (results.length === 1 ? '' : 's') + ' changed.' +
+        (applied ? ' Review them in the Changes panel; you can revert any of them.' : '');
+    dialog.appendChild(summary);
+    var list = document.createElement('ul');
+    results.forEach(function(r) {
+        var item = document.createElement('li');
+        item.className = r.ok ? 'is-ok' : 'is-failed';
+        var mark = document.createElement('span');
+        mark.className = 'patch-mark';
+        mark.textContent = r.ok ? '\u2713' : '\u2715';
+        var name = document.createElement('span');
+        name.className = 'patch-path';
+        name.textContent = r.path;
+        var detail = document.createElement('span');
+        detail.className = 'patch-detail';
+        detail.textContent = r.ok ? r.kind + (r.note || '') : r.message;
+        item.append(mark, name, detail);
+        list.appendChild(item);
+    });
+    dialog.appendChild(list);
+    var close = document.createElement('button');
+    close.textContent = 'OK';
+    close.onclick = function() { dialog.close(); };
+    dialog.appendChild(close);
+    dialog.onclose = function() { dialog.remove(); };
+    document.body.appendChild(dialog);
+    dialog.showModal();
+}
+
+(function() {
+    var button = document.getElementById('apply-patch');
+    var input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.patch,.diff,.txt,text/x-diff,text/x-patch,text/plain';
+    input.onchange = function() {
+        var file = input.files[0];
+        input.value = '';
+        if (!file) return;
+        file.text().then(function(text) {
+            applyPatchText(text, file.name);
+        });
+    };
+    button.onclick = function() {
+        input.click();
+    };
+    document.getElementById('changes-download-patch').onclick = downloadChangesPatch;
+})();
 
 // The top bar can wrap onto more rows in narrow windows. Publish its height
 // so that the panels below it (see viewer.less) fill the rest of the window.
@@ -891,10 +2133,11 @@ var viewFileInfo = (function() {
                 setFileEdited(entry, modified ? editorCurrent : null);
             }
 
-            function createEditor(host, doc) {
+            function createEditor(host, doc, initialDoc) {
                 var editor = ZenEditor.create({
                     parent: host,
                     doc: doc,
+                    initialDoc: initialDoc,
                     filename: entry.filename,
                     readOnly: !editorPrefs.editable,
                     wrap: editorPrefs.wrap,
@@ -925,7 +2168,10 @@ var viewFileInfo = (function() {
                 toggleBeautify.classList.toggle('is-active', useBeautified);
                 if (!editorCurrent) {
                     if (!useBeautified) {
-                        editorRaw = editorCurrent = createEditor(hostRaw, text);
+                        // Text from an applied patch, if any (see setPatchedText).
+                        var patchedText = entry._patchedText;
+                        delete entry._patchedText;
+                        editorRaw = editorCurrent = createEditor(hostRaw, text, patchedText);
                     } else {
                         enableEditorButtons(false);
                         beautify({
@@ -1018,8 +2264,30 @@ var viewFileInfo = (function() {
             function onSourceViewShow() {
                 sourceCodeElem.addEventListener('sourceviewhide', onSourceViewHide);
                 sourceToolbarElem.appendChild(heading);
+                if (entry._patchedText !== undefined && hostCurrent !== hostRaw) {
+                    // A patch changed this file: show the original (patched) code.
+                    selectView(false);
+                    return;
+                }
                 doRenderSourceCodeViewer();
             }
+
+            // Called by setPatchedText. Returns whether this editor took the text.
+            entry._setPatchedText = function(newText) {
+                if (editorRaw) {
+                    editorRaw.setText(newText);
+                    if (sourceToolbarElem.firstChild === heading && hostCurrent !== hostRaw) {
+                        selectView(false);
+                    }
+                    return true;
+                }
+                if (sourceToolbarElem.firstChild === heading) {
+                    entry._patchedText = newText;
+                    selectView(false);
+                    return true;
+                }
+                return false;
+            };
 
             function onSourceViewHide() {
                 sourceCodeElem.removeEventListener('sourceviewhide', onSourceViewHide);
@@ -1036,7 +2304,8 @@ var viewFileInfo = (function() {
             // Use the last selected option for new views.
             // Note: This state only changes when the user clicks on the
             // `toggleBeautify` button, not when they change the file view.
-            selectView(!!beautify.getType(entry.filename) && !wantRawSourceGlobalDefault);
+            selectView(!!beautify.getType(entry.filename) && !wantRawSourceGlobalDefault &&
+                entry._patchedText === undefined);
             finalCallback(onSourceViewShow);
         }
     };
@@ -1154,6 +2423,12 @@ var viewFileInfo = (function() {
         }
     };
 
+    // The locale diff (locale-diff.js) replaced the file view: clicking the
+    // same file again must show it again.
+    viewFileInfo.forgetCurrentEntry = function() {
+        _currentEntry = null;
+    };
+
     // Called right before the source viewer switches to another view.
     function willSwitchSourceView() {
         var sourceToolbarElem = document.getElementById('source-toolbar');
@@ -1247,7 +2522,12 @@ var viewFileInfo = (function() {
                 });
             });
 
-            infoTable.addRow('Link', '').appendChild(createPermaLinkAnchor(entry));
+            var linkCell = infoTable.addRow('Link', '');
+            linkCell.appendChild(createPermaLinkAnchor(entry));
+            var noLinkNote = document.createElement('span');
+            noLinkNote.className = 'permalink-unavailable';
+            noLinkNote.textContent = 'Not available for files opened from your computer (they have no web address).';
+            linkCell.appendChild(noLinkNote);
 
             if (entry.filename === 'manifest.json') {
                 infoTable.addRow('Extension ID', '(unknown)');
@@ -1269,6 +2549,7 @@ var viewFileInfo = (function() {
                 button.title = '';
                 var permalinkAnchor = output.querySelector('tr[data-description="Link"] a');
                 permalinkAnchor.hidden = !permalinkAnchor.updatePermalink();
+                permalinkAnchor.nextElementSibling.hidden = !permalinkAnchor.hidden;
             }
         }
         // Hide the output and update the button label.
@@ -1300,16 +2581,30 @@ var viewFileInfo = (function() {
 
     function createPermaLinkAnchor(entry) {
         var a = document.createElement('a');
-        a.textContent = 'Link to this view';
+        a.textContent = 'External link to current view';
+        a.className = 'permalink';
+        // Open in a new tab, so the current view (and any unsaved edits) stays.
+        a.target = '_blank';
+        a.rel = 'noopener';
+        a.title = 'Opens this add-on, file and search in a new tab. ' +
+            'Copy it to bookmark or share the view.';
         a.updatePermalink = function() {
             if (window.addon_url) {
                 // Can only generate permalinks for public URLs.
                 a.href = generatePseudoPermalink(entry);
                 return true;
             }
+            a.removeAttribute('href');
+            return false;
         };
-        // In case any parameter changes while updating.
-        a.onfocus = a.updatePermalink;
+        // The search position, highlighting and beautify state can change
+        // after the analysis was shown, so rebuild the link right before it is
+        // used: hover (status bar), click, middle-click, right-click "Copy
+        // Link" and keyboard focus. Focus alone is not enough, because mouse
+        // clicks do not focus links on every platform.
+        ['focus', 'mouseenter', 'mousedown', 'click', 'auxclick', 'contextmenu'].forEach(function(type) {
+            a.addEventListener(type, a.updatePermalink);
+        });
         return a;
     }
     function generatePseudoPermalink(entry) {
@@ -1477,6 +2772,7 @@ var TextSearchEngine = (function() {
         this.resultCallback = null;
         this.queryChangeCallback = null;
         this._currentSearchTerm = '';
+        this._currentSearchRequestId = 0;
         this._currentSearchStart = 0;
         this._recentSearchResults = {
             // This is often identical to this._currentSearchTerm, except the latter may become an
@@ -1563,8 +2859,10 @@ var TextSearchEngine = (function() {
                 return; // No change in result, do not lazily initialize the worker.
             }
             this._currentSearchTerm = '';
+            this._currentSearchRequestId++;
             this.worker.postMessage({
                 searchTerm: '',
+                requestId: this._currentSearchRequestId,
             });
             // No search term = every file matches.
             this.resultCallback(null, true);
@@ -1575,18 +2873,26 @@ var TextSearchEngine = (function() {
         }
         this.resultCallback(null, null); // Should not call doPlaintextSearch again.
 
+        this._currentSearchRequestId++;
+
         // Re-use the last search results if possible.
+        var previousLiteral = getLiteralSearchInfo(this._recentSearchResults.searchTerm);
+        var currentLiteral = getLiteralSearchInfo(searchTerm);
         if (this._recentSearchResults.searchTerm === searchTerm) {
             lowPrioFilenames = mergeUnique(lowPrioFilenames, this._recentSearchResults.found);
             lowPrioFilenames = mergeUnique(lowPrioFilenames, this._recentSearchResults.notfound);
             this.resultCallback(this._recentSearchResults.found, true);
             this.resultCallback(this._recentSearchResults.notfound, false);
-        } else if (this._recentSearchResults.searchTerm.indexOf(searchTerm) !== -1) {
+        } else if (previousLiteral && currentLiteral &&
+                previousLiteral.caseSensitive === currentLiteral.caseSensitive &&
+                previousLiteral.text.indexOf(currentLiteral.text) !== -1) {
             // E.g. "test" -> "tes". If the result contained "test" then it also includes "tes".
             lowPrioFilenames = mergeUnique(lowPrioFilenames, this._recentSearchResults.found);
             this.resultCallback(this._recentSearchResults.found, true);
             this._recentSearchResults.notfound.length = 0;
-        } else if (searchTerm.indexOf(this._recentSearchResults.searchTerm) !== -1) {
+        } else if (previousLiteral && currentLiteral &&
+                previousLiteral.caseSensitive === currentLiteral.caseSensitive &&
+                currentLiteral.text.indexOf(previousLiteral.text) !== -1) {
             // E.g. "tes" -> "test". If the result did not contain "tes" then it will not contain
             // "test" either.
             lowPrioFilenames = mergeUnique(lowPrioFilenames, this._recentSearchResults.notfound);
@@ -1602,6 +2908,7 @@ var TextSearchEngine = (function() {
         this.worker.postMessage({
             searchTerm: searchTerm,
             lowPrioFilenames: lowPrioFilenames,
+            requestId: this._currentSearchRequestId,
         });
         if (this.queryChangeCallback) {
             this.queryChangeCallback();
@@ -1620,6 +2927,18 @@ var TextSearchEngine = (function() {
         return merged;
     }
 
+    // Prefix/suffix reuse is valid for literal substring searches only. It is
+    // not valid for regular expressions or across case-sensitive modes.
+    function getLiteralSearchInfo(searchTerm) {
+        if (TextSearchEngine.parsePatternAsRegExp(searchTerm)) {
+            return null;
+        }
+        if (searchTerm.lastIndexOf('case:', 0) === 0) {
+            return {text: searchTerm.slice(5), caseSensitive: true};
+        }
+        return {text: searchTerm, caseSensitive: false};
+    }
+
     function initializeWorker(textSearchEngine) {
         var worker = new Worker('search-worker.js');
         worker.addEventListener('message', function(event) {
@@ -1627,7 +2946,7 @@ var TextSearchEngine = (function() {
                 return;
             }
             var message = event.data;
-            if (message.searchTerm !== textSearchEngine._currentSearchTerm) {
+            if (message.requestId !== textSearchEngine._currentSearchRequestId) {
                 return;
             }
             if (message.found.length) {
@@ -1854,6 +3173,24 @@ var checkAndApplyFilter = (function() {
         });
         textSearchEngine.doPlaintextSearch(searchTerm, filteredFilenames);
     }
+    function parseApiSearch(searchTerm) {
+        var match = /^api:(.*)$/i.exec(searchTerm);
+        if (!match) {
+            return null;
+        }
+        var apiPath = match[1].trim().replace(/^(?:browser|chrome)\./i, '');
+        if (!/^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*$/.test(apiPath)) {
+            throw new Error('Use api:namespace[.method], for example api:tabs.query');
+        }
+        var propertyAccess = apiPath.split('.').map(function(property) {
+            property = property.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            // Match dot access, optional chaining, and quoted bracket access.
+            return '(?:\\?\\.\\s*' + property + '|\\.\\s*' + property +
+                '|\\[\\s*["\']' + property + '["\']\\s*\\])';
+        }).join('');
+        // Match both Firefox's browser.* and Chrome's chrome.* namespace.
+        return 'iregexp:\\b(?:browser|chrome)\\s*' + propertyAccess + '(?![\\w$])';
+    }
     function renderTotalFileSize() {
         var listItems = document.querySelectorAll('#file-list li[data-filename]:not(.file-filtered):not(.grep-no-match)');
         var totalUncompressedSize = 0;
@@ -1895,6 +3232,23 @@ var checkAndApplyFilter = (function() {
         }
 
         try {
+            var apiSearchTerm = parseApiSearch(grepTerm);
+            if (apiSearchTerm !== null) {
+                grepTerm = apiSearchTerm;
+                if (!pattern.trim()) {
+                    // With no explicit filename filter, limit API searches to
+                    // common source files instead of matching docs and assets.
+                    pattern = '\\.(?:[cm]?js|jsx|tsx?|html?)$';
+                }
+            }
+            TextSearchEngine.parsePatternAsRegExp(grepTerm);
+        } catch (e) {
+            fileFilterElem.classList.add('invalid');
+            feedback.textContent = 'Search: ' + e.message;
+            return;
+        }
+
+        try {
             pattern = new RegExp(pattern, 'i');
             feedback.textContent = '';
             fileFilterElem.classList.remove('invalid');
@@ -1903,18 +3257,6 @@ var checkAndApplyFilter = (function() {
             // Strip Regexp, the user can see it themselves..
             // Invalid regular expression: /..pattern.../ : blablabla
             feedback.textContent = (e.message+'').replace(': /' + pattern + '/i', '').replace(': /' + pattern + '/', '');
-            return;
-        }
-        
-        // Validate the grep pattern here to make sure that we don't apply the filter if the
-        // pattern is invalid.
-        try {
-            TextSearchEngine.parsePatternAsRegExp(grepTerm);
-            feedback.textContent = '';
-            fileFilterElem.classList.remove('invalid');
-        } catch (e) {
-            fileFilterElem.classList.add('invalid');
-            feedback.textContent = 'Search: ' + e.message;
             return;
         }
         applyFilter(pattern);
@@ -2020,6 +3362,8 @@ var checkAndApplyFilter = (function() {
 // Go load the stuff
 initialize();
 function initialize() {
+    initializeApiReportPanel();
+    initializeLocaleCoveragePanel();
     if (getParam('noview')) {
         showAdvancedOpener();
         return;
@@ -2184,84 +3528,59 @@ function showAdvancedOpener() {
             amoxpilist.appendChild(li);
         }
     };
-    fileInput.onchange = function() {
-        var file = fileInput.files[0];
+    function openLocalFile(file) {
         if (file) {
             advancedOpenView.classList.remove('visible');
             openAddonInViewer('', file.name, file);
         }
+    }
+    fileInput.onchange = function() {
+        openLocalFile(fileInput.files[0]);
     };
+    var fileDrop = document.getElementById('open-file-drop');
+    fileDrop.onkeydown = function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            fileInput.click();
+        }
+    };
+    // A file can be dropped anywhere on the page while this view is shown.
+    // Elsewhere, Firefox would open (and offer to install) a dropped .xpi file.
+    if (!showAdvancedOpener.hasDropListeners) {
+        showAdvancedOpener.hasDropListeners = true;
+        var isOpenViewShown = function(e) {
+            return advancedOpenView.classList.contains('visible') &&
+                e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types, 'Files') !== -1;
+        };
+        document.addEventListener('dragover', function(e) {
+            if (!isOpenViewShown(e)) return;
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'copy';
+            fileDrop.classList.add('is-dragging');
+        });
+        document.addEventListener('dragleave', function(e) {
+            if (!e.relatedTarget) fileDrop.classList.remove('is-dragging');
+        });
+        document.addEventListener('drop', function(e) {
+            if (!isOpenViewShown(e)) return;
+            e.preventDefault();
+            fileDrop.classList.remove('is-dragging');
+            openLocalFile(e.dataTransfer.files[0]);
+        });
+    }
+    // From the toolbar popup's "Upload": Firefox closes the popup when a file
+    // dialog opens, so the file is chosen here instead.
+    var isUpload = !!getParam('upload');
+    fileDrop.classList.toggle('is-highlighted', isUpload);
 
     urlInput.addEventListener('input', maybeFillAmoForm);
     urlInput.value = getParam('url') || '';
     maybeFillAmoForm();
 
     advancedOpenView.classList.add('visible');
-}
-
-// Calls callback(description, Array<{url:String, version:String, platform:String}>)
-// If there are more results: The callback will include a third parameter with a non-zero page number to use.
-// If called repeatedly: Will only call the callback of the last call.
-function getXpis(amodomain, slugorid, page, callback) {
-    var apiUrl = 'https://' + amodomain + '/api/v4/addons/addon/' + slugorid + '/versions/';
-    // Have smaller response bodies by only including one language.
-    apiUrl += '?lang=en-US';
-    if (page) {
-        apiUrl += '&page=' + page;
-    } else {
-        // When the page parameter is omitted, it defaults to 1.
-        page = 1;
+    if (isUpload) {
+        fileDrop.focus();
     }
-    var x = new XMLHttpRequest();
-    x.open('GET', apiUrl);
-    x.onloadend = function() {
-        if (getXpis._pendingXhr === x) {
-            getXpis._pendingXhr = null;
-        }
-
-        if (x.status === 401 || x.status === 403) {
-            callback('The results are not publicly available for: ' + slugorid, []);
-            return;
-        }
-        if (x.status !== 200) {
-            callback('No results found for: ' + slugorid, []);
-            return;
-        }
-        var nextPage = 0;
-        var totalVersions = 0;
-        var results = [];
-        try {
-            var response = JSON.parse(x.responseText);
-            response.results.forEach(function(res) {
-                res.files.forEach(function(file) {
-                    results.push({
-                        url: file.url.replace(/\.xpi\?.*$/, '.xpi'),
-                        version: res.version,
-                        platform: file.platform,
-                        createdDate: new Date(file.created),
-                    });
-                });
-            });
-            if (response.next) {
-                nextPage = page + 1;
-            }
-            totalVersions = response.count;
-        } catch (e) {
-            console.error('Failed to parse response', e);
-            callback('Unexpected response from add-ons server (' + e + ').', results);
-            return;
-        }
-        if (nextPage) {
-            callback('Found ' + totalVersions + ' results', results, nextPage);
-            return;
-        }
-        callback('Found ' + results.length + ' recent results.', results);
-    };
-    if (getXpis._pendingXhr) {
-        getXpis._pendingXhr.abort();
-    }
-    x.send();
-    getXpis._pendingXhr = x;
 }
 
 // |addon_url| is the canonical representation (absolute URL) of the zip file.
@@ -2428,13 +3747,16 @@ function loadUrlInViewer(addon_url, onHasBlob) {
             var loaded = xhrProgressEvent.loaded;
             var total = xhrProgressEvent.total;
             progressDiv.textContent = 'Loading ' + addon_url;
-            progressDiv.insertAdjacentHTML('beforeend', '<br><br>' +
-                                           (formatByteSize(loaded) + ' / ' + formatByteSize(total)) + '<br>' +
-                                           '<progress max="' + total + '" value="' + loaded + '">');
+            var progress = document.createElement('progress');
+            progress.max = total;
+            progress.value = loaded;
+            progressDiv.append(document.createElement('br'), document.createElement('br'),
+                formatByteSize(loaded) + ' / ' + formatByteSize(total),
+                document.createElement('br'), progress);
         } else {
             progressDiv.textContent = 'Loading ' + addon_url;
-            progressDiv.insertAdjacentHTML('beforeend', '<br><br>' +
-                                           'Loaded bytes: ' + formatByteSize(xhrProgressEvent.loaded) + ' (total size unknown)');
+            progressDiv.append(document.createElement('br'), document.createElement('br'),
+                'Loaded bytes: ' + formatByteSize(xhrProgressEvent.loaded) + ' (total size unknown)');
         }
     }
 }
@@ -2445,10 +3767,17 @@ function handleBlob(zipname, blob) {
 
     setBlobAsDownload(zipname, blob);
     textSearchEngine = new TextSearchEngine(blob);
+    // Identifies the archive, e.g. to keep review notes per add-on file (main-view.js).
+    ZenFiles.setArchiveBlob(blob);
 
     zip.createReader(new zip.BlobReader(blob), function(zipReader) {
         renderPanelResizer();
-        zipReader.getEntries(handleZipEntries);
+        zipReader.getEntries(function(entries) {
+            archiveEntries = entries;
+            addedEntries.clear();
+            replacedEntries.clear();
+            handleZipEntries(entries);
+        });
     }, function(error) {
         progressDiv.textContent = 'Cannot open ' + (zipname || ' this file') + ' as a zip file: ' + error;
         appendFileChooser();
@@ -2465,6 +3794,10 @@ function setViewerLink(addon_url) {
             url: addon_url,
         });
     }
+
+    // Compare this add-on with another version (compare.html).
+    var compareLink = document.getElementById('compare-link');
+    compareLink.href = 'compare.html' + (addon_url ? '?' + encodeQueryString({old: addon_url}) : '');
 
     var link = document.getElementById('open-viewer');
     link.href = viewerUrl;

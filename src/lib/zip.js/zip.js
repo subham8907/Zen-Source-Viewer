@@ -9078,6 +9078,8 @@
       directory: entry.directory,
       compressedSize: entry.compressedSize,
       uncompressedSize: entry.uncompressedSize,
+      // CRC-32 checksum of the content (used to find changed files quickly).
+      crc32: entry.crc32 !== void 0 ? entry.crc32 : entry.signature,
       lastModDate: entry.lastModDate,
       comment: entry.comment,
       // onprogress and checkCrc32 (zip.js 1.x) are not used by the viewer.

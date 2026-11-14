@@ -5,18 +5,18 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  * Modified by Subham Mahesh, 2026: reduced to Firefox only (removed Chrome, Opera and web-demo code,
- * and Chrome/Edge/Opera CRX links and add-on sites). */
+ * and Chrome/Edge/Opera CRX links and add-on sites); moved the button menu from the address bar button
+ * to the toolbar button. */
 
 /* jshint browser:true, devel:true, esversion:6 */
 /* globals chrome, amo_match_patterns, atn_match_patterns, get_addon_download_url */
-/* globals encodeQueryString */
+/* globals encodeQueryString, ZenConsent */
 
 'use strict';
 (function() {
     var MENU_ID_LINK = 'nl.robwu.contextmenu.addonlink';
     var MENU_ID_AMO_APPROVED_LINK = 'nl.robwu.contextmenu.amoapprovedlink';
     var MENU_ID_AMO_APPROVED_PAGE = 'nl.robwu.contextmenu.amoapprovedpage';
-    var MENU_ID_PAGE_ACTION = 'nl.robwu.contextmenu.pageaction';
     var MENU_ID_ACTION_MENU = 'nl.robwu.contextmenu.actionmenu.';
     var MENU_ID_ACTION_MENU_POPUP = MENU_ID_ACTION_MENU + 'popup';
     var MENU_ID_ACTION_MENU_VIEW_SOURCE = MENU_ID_ACTION_MENU + 'view-source';
@@ -133,14 +133,9 @@
             markMenuRegistrationCompleted();
         });
         chrome.contextMenus.create({
-            id: MENU_ID_PAGE_ACTION,
-            title: 'Hide this button',
-            contexts: ['page_action'],
-        });
-        chrome.contextMenus.create({
             id: MENU_ID_ACTION_MENU,
-            title: 'Primary action on click',
-            contexts: ['page_action'],
+            title: 'On add-on pages, clicking does',
+            contexts: ['browser_action'],
         });
         chrome.contextMenus.create({
             id: MENU_ID_ACTION_MENU_POPUP,
@@ -148,7 +143,7 @@
             title: 'Show popup (default)',
             type: 'radio',
             checked: true,
-            contexts: ['page_action'],
+            contexts: ['browser_action'],
         });
         // Note: Keep the same order as in popup.html for consistency.
         chrome.contextMenus.create({
@@ -156,14 +151,14 @@
             parentId: MENU_ID_ACTION_MENU,
             title: 'Download as zip',
             type: 'radio',
-            contexts: ['page_action'],
+            contexts: ['browser_action'],
         });
         chrome.contextMenus.create({
             id: MENU_ID_ACTION_MENU_VIEW_SOURCE,
             parentId: MENU_ID_ACTION_MENU,
             title: 'View source',
             type: 'radio',
-            contexts: ['page_action'],
+            contexts: ['browser_action'],
         });
     }
 
@@ -175,18 +170,14 @@
     }
     
     function contextMenusOnClicked(info, tab) {
-        if (info.menuItemId === MENU_ID_PAGE_ACTION) {
-            // background.js will now pick up the storage change
-            // and disable page actions.
-            chrome.storage.sync.set({showPageAction: false});
-            return;
-        }
         if (info.menuItemId.startsWith(MENU_ID_ACTION_MENU)) {
             var choice = info.menuItemId.slice(MENU_ID_ACTION_MENU.length);
             chrome.storage.sync.set({actionClickAction: choice});
             return;
         }
         var url = info.menuItemId == MENU_ID_AMO_APPROVED_PAGE ? info.pageUrl : info.linkUrl;
+        // Without privacy consent, the viewer opens the consent page first
+        // (consent-gate.js) and continues after the user agrees.
         openViewerRelatedToTab(get_addon_download_url(url), tab);
     }
     function openViewerRelatedToTab(url, tab) {

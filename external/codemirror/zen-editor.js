@@ -1,8 +1,16 @@
 /**
- * (c) 2026 Subham Mahesh
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * Copyright 2026 Subham Mahesh
+ *
+ * Licensed under the File-Level Copyleft License (FLCL), Version 1.0
+ * (the "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License in the
+ * LICENSE-FLCL file accompanying this work.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ * implied. See the License for the specific language governing
+ * permissions and limitations under the License.
  *
  * Entry point for the bundled CodeMirror 6 editor used by the viewer.
  * Bundled by `node make.js codemirror` into src/lib/codemirror/zen-editor.js,
@@ -12,7 +20,7 @@
 import {
     EditorView, keymap, lineNumbers, highlightActiveLineGutter, highlightSpecialChars,
     drawSelection, dropCursor, rectangularSelection, crosshairCursor, highlightActiveLine,
-    Decoration, ViewPlugin,
+    Decoration, ViewPlugin, gutter, GutterMarker,
 } from '@codemirror/view';
 import {EditorState, Compartment, EditorSelection, Text, RangeSetBuilder} from '@codemirror/state';
 import {
@@ -237,7 +245,9 @@ function regExpToSearchQuery(regexp) {
  *
  * @param {object} options
  * @param {HTMLElement} options.parent
- * @param {string} options.doc
+ * @param {string} options.doc The original text (the baseline for diffs and revert).
+ * @param {string} [options.initialDoc] Text to show instead of doc, e.g. after
+ *     applying a patch; the editor then starts as modified.
  * @param {string} options.filename
  * @param {boolean} options.readOnly
  * @param {boolean} options.wrap
@@ -254,6 +264,8 @@ function create(options) {
     const diffCompartment = new Compartment();
     const wrapCompartment = new Compartment();
     const highlightCompartment = new Compartment();
+    // Review notes (review-notes.js): a marker in the gutter of each line with a note.
+    const notesCompartment = new Compartment();
     const splitHighlightCompartment = new Compartment();
 
     // Two places can provide the search term: the filter box of the viewer
@@ -386,6 +398,7 @@ function create(options) {
         readOnlyCompartment.of(readOnlyExtension(options.readOnly)),
         wrapCompartment.of(options.wrap ? EditorView.lineWrapping : []),
         highlightCompartment.of([]),
+        notesCompartment.of([]),
         diffCompartment.of([]),
         panelQueryListener,
         EditorView.updateListener.of((update) => {
@@ -404,10 +417,14 @@ function create(options) {
         extensions.push(linter(jsonParseLinter()), lintGutter());
     }
 
+    const startText = typeof options.initialDoc === 'string' ? options.initialDoc : originalText;
     const view = new EditorView({
-        state: EditorState.create({doc: originalText, extensions}),
+        state: EditorState.create({doc: startText, extensions}),
         parent: options.parent,
     });
+    if (startText !== originalText) {
+        lastModified = true;
+    }
 
     function allMatches(limit) {
         const query = effectiveQuery();
@@ -488,8 +505,30 @@ function create(options) {
     return {
         view,
         languageName: language.name,
+        // Shows a marker next to lines with notes: [{line, title}] (1-based
+        // lines). onClick(line) is called when a marker is clicked.
+        setNotes(notes, onClick) {
+            view.dispatch({effects: notesCompartment.reconfigure(notesGutter(notes || [], onClick))});
+        },
+        // The 1-based line of the cursor, and its text.
+        getCursorLine() {
+            const line = view.state.doc.lineAt(view.state.selection.main.head);
+            return {line: line.number, text: line.text};
+        },
+        getLineText(number) {
+            if (number < 1 || number > view.state.doc.lines) return '';
+            return view.state.doc.line(number).text;
+        },
         getText() {
             return view.state.doc.toString();
+        },
+        getOriginalText() {
+            return originalText;
+        },
+        // Replaces the whole text (e.g. with the result of applying a patch).
+        setText(text) {
+            const target = mergeView ? mergeView.b : view;
+            target.dispatch({changes: {from: 0, to: target.state.doc.length, insert: text}});
         },
         isModified() {
             return lastModified;
@@ -622,4 +661,173 @@ function create(options) {
     };
 }
 
-window.ZenEditor = {create, languageForFilename: (f) => languageForFilename(f).name};
+class NoteMarker extends GutterMarker {
+    constructor(title) {
+        super();
+        this.title = title;
+    }
+    eq(other) {
+        return other.title === this.title;
+    }
+    toDOM() {
+        const marker = document.createElement('span');
+        marker.className = 'cm-zen-note-marker';
+        marker.textContent = '\u25cf';
+        marker.title = this.title;
+        return marker;
+    }
+}
+
+function notesGutter(notes, onClick) {
+    if (!notes.length) return [];
+    const byLine = new Map();
+    notes.forEach((note) => {
+        const titles = byLine.get(note.line) || [];
+        titles.push(note.title);
+        byLine.set(note.line, titles);
+    });
+    const lines = Array.from(byLine.keys()).sort((a, b) => a - b);
+    return gutter({
+        class: 'cm-zen-notes-gutter',
+        markers(view) {
+            const builder = new RangeSetBuilder();
+            lines.forEach((number) => {
+                if (number < 1 || number > view.state.doc.lines) return;
+                const line = view.state.doc.line(number);
+                builder.add(line.from, line.from, new NoteMarker(byLine.get(number).join('\n\n')));
+            });
+            return builder.finish();
+        },
+        initialSpacer: () => new NoteMarker(''),
+        domEventHandlers: {
+            mousedown(view, block) {
+                const number = view.state.doc.lineAt(block.from).number;
+                if (!byLine.has(number) || !onClick) return false;
+                onClick(number);
+                return true;
+            },
+        },
+    });
+}
+
+function textToDoc(text) {
+    return Text.of(text.split(/\r\n|\r|\n/));
+}
+
+/**
+ * Creates a read-only view of the differences between two texts, used to
+ * compare two versions of an add-on.
+ *
+ * @param {object} options
+ * @param {HTMLElement} options.parent
+ * @param {string} options.original Text of the old version ('' if the file was added).
+ * @param {string} options.modified Text of the new version ('' if the file was removed).
+ * @param {string} options.filename Used to pick the syntax highlighting.
+ * @param {string} options.mode 'split' (side by side) or 'unified' (inline).
+ * @param {boolean} options.wrap Whether long lines wrap.
+ */
+function createDiffView(options) {
+    const language = languageForFilename(options.filename);
+    const originalDoc = textToDoc(options.original);
+    const modifiedDoc = textToDoc(options.modified);
+    let mode = options.mode === 'unified' ? 'unified' : 'split';
+    let wrap = !!options.wrap;
+    let mergeView = null;
+    let unifiedView = null;
+    const host = document.createElement('div');
+    host.className = 'cm-zen-diff';
+    options.parent.appendChild(host);
+
+    function shared() {
+        return [
+            lineNumbers(),
+            highlightSpecialChars(),
+            drawSelection(),
+            EditorState.readOnly.of(true),
+            EditorView.editable.of(false),
+            EditorState.tabSize.of(4),
+            syntaxHighlighting(zenHighlightStyle, {fallback: true}),
+            highlightSelectionMatches(),
+            search({top: true}),
+            keymap.of([...defaultKeymap, ...searchKeymap]),
+            language.support,
+            zenTheme,
+            wrap ? EditorView.lineWrapping : [],
+        ];
+    }
+    function render() {
+        if (mergeView) mergeView.destroy();
+        if (unifiedView) unifiedView.destroy();
+        mergeView = unifiedView = null;
+        host.textContent = '';
+        const diffConfig = {scanLimit: 500, timeout: 500};
+        const collapseUnchanged = {margin: 3, minSize: 6};
+        if (mode === 'split') {
+            mergeView = new MergeView({
+                a: {doc: originalDoc, extensions: shared()},
+                b: {doc: modifiedDoc, extensions: shared()},
+                parent: host,
+                gutter: true,
+                highlightChanges: true,
+                collapseUnchanged,
+                diffConfig,
+            });
+        } else {
+            unifiedView = new EditorView({
+                state: EditorState.create({
+                    doc: modifiedDoc,
+                    extensions: [
+                        shared(),
+                        unifiedMergeView({
+                            original: originalDoc,
+                            gutter: true,
+                            highlightChanges: true,
+                            syntaxHighlightDeletions: true,
+                            mergeControls: false,
+                            collapseUnchanged,
+                            diffConfig,
+                        }),
+                    ],
+                }),
+                parent: host,
+            });
+        }
+    }
+    render();
+
+    return {
+        get mode() {
+            return mode;
+        },
+        setMode(newMode) {
+            if (newMode === mode) return;
+            mode = newMode;
+            render();
+        },
+        setWrap(newWrap) {
+            if (newWrap === wrap) return;
+            wrap = newWrap;
+            render();
+        },
+        // Moves to the next (dir=1) or previous (dir=-1) changed block.
+        goToChange(dir) {
+            const target = mergeView ? mergeView.b : unifiedView;
+            const command = dir < 0 ? goToPreviousChunk : goToNextChunk;
+            command({state: target.state, dispatch: (tr) => target.dispatch(tr)});
+            target.dispatch({effects: EditorView.scrollIntoView(target.state.selection.main.head, {y: 'center'})});
+        },
+        destroy() {
+            if (mergeView) mergeView.destroy();
+            if (unifiedView) unifiedView.destroy();
+            host.remove();
+        },
+    };
+}
+
+window.ZenEditor = {
+    create,
+    createDiffView,
+    // Line counts of the differences between two texts: {added, removed}.
+    diffStats: (original, modified) => diffStats(textToDoc(original), textToDoc(modified)),
+    languageForFilename: (f) => languageForFilename(f).name,
+};

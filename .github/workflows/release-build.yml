@@ -1,0 +1,189 @@
+# Copyright 2026 Subham Mahesh
+#
+# Licensed under the File-Level Copyleft License (FLCL), Version 1.0
+# (the "License"); you may not use this file except in compliance
+# with the License. You may obtain a copy of the License in the
+# LICENSE-FLCL file accompanying this work.
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+# implied. See the License for the specific language governing
+# permissions and limitations under the License.
+#
+# Bumps the version automatically (2.0.4 -> 2.0.5), builds and lints the
+# add-on, submits it to the public listing on addons.mozilla.org (AMO) with
+# web-ext together with its source code, and publishes a GitHub release.
+#
+# Run it from the Actions tab: "Release" -> "Run workflow". It asks nothing.
+#
+# Signing needs two repository secrets (Settings -> Secrets and variables ->
+# Actions), with the API credentials from
+# https://addons.mozilla.org/developers/addon/api/key/ :
+#   WEB_EXT_API_KEY     the JWT issuer
+#   WEB_EXT_API_SECRET  the JWT secret
+
+name: Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    env:
+      WEB_EXT_VERSION: 10.1.0
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check the signing credentials
+        env:
+          WEB_EXT_API_KEY: ${{ secrets.WEB_EXT_API_KEY }}
+          WEB_EXT_API_SECRET: ${{ secrets.WEB_EXT_API_SECRET }}
+        run: |
+          if [ -z "$WEB_EXT_API_KEY" ] || [ -z "$WEB_EXT_API_SECRET" ]; then
+            echo "::error::Add the repository secrets WEB_EXT_API_KEY and WEB_EXT_API_SECRET."
+            exit 1
+          fi
+
+      - name: Choose the next version
+        run: |
+          # The last number of the current version + 1, skipping versions
+          # that already have a tag: 2.0.4 -> 2.0.5.
+          CURRENT=$(node -p "require('./src/manifest.json').version")
+          VERSION=$(node -e '
+            const parts = process.argv[1].split(".").map(Number);
+            while (parts.length < 3) parts.push(0);
+            parts[parts.length - 1]++;
+            console.log(parts.join("."));
+          ' "$CURRENT")
+          while git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null; do
+            VERSION=$(node -e '
+              const parts = process.argv[1].split(".").map(Number);
+              parts[parts.length - 1]++;
+              console.log(parts.join("."));
+            ' "$VERSION")
+          done
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "Releasing $VERSION (current version: $CURRENT)"
+          echo "### Releasing $VERSION (was $CURRENT)" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check that the bundled libraries are up to date
+        run: |
+          node make.js bundles
+          if ! git diff --quiet -- src/lib; then
+            git diff --stat -- src/lib
+            echo "::error::The bundles in src/lib do not match package-lock.json. Run 'node make.js bundles' and commit the result."
+            exit 1
+          fi
+
+      - name: Bump the version
+        run: |
+          node -e '
+            const fs = require("fs");
+            const file = "src/manifest.json";
+            const manifest = JSON.parse(fs.readFileSync(file, "utf8"));
+            manifest.version = process.argv[1];
+            fs.writeFileSync(file, JSON.stringify(manifest, null, 4) + "\n");
+          ' "$VERSION"
+          git diff -- src/manifest.json
+          # Commit and tag now (pushed only after signing succeeded), so that
+          # the source code archive below has the new version.
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/manifest.json
+          git commit -m "Version $VERSION"
+          git tag -a "v$VERSION" -m "Zen Source Viewer $VERSION"
+
+      - name: Build
+        run: node make.js firefox
+
+      - name: Lint
+        run: npx --yes "web-ext@$WEB_EXT_VERSION" lint --source-dir dist/firefox
+
+      - name: Create the source code archive
+        run: |
+          # The add-on contains bundled libraries (src/lib, built by esbuild
+          # from npm packages), so addons.mozilla.org asks for the source code
+          # and the build instructions (see "Building" in README.md).
+          mkdir -p release
+          git archive --format=zip --prefix="zen-source-viewer-$VERSION-source/" \
+            -o "release/zen-source-viewer-$VERSION-source.zip" "v$VERSION"
+          unzip -l "release/zen-source-viewer-$VERSION-source.zip" | tail -n 1
+
+      - name: Submit to addons.mozilla.org (listed)
+        env:
+          # web-ext reads its options from WEB_EXT_* environment variables.
+          WEB_EXT_API_KEY: ${{ secrets.WEB_EXT_API_KEY }}
+          WEB_EXT_API_SECRET: ${{ secrets.WEB_EXT_API_SECRET }}
+        run: |
+          # Listed versions are reviewed by Mozilla; do not wait for that.
+          npx --yes "web-ext@$WEB_EXT_VERSION" sign \
+            --source-dir dist/firefox \
+            --artifacts-dir web-ext-artifacts \
+            --channel listed \
+            --upload-source-code "release/zen-source-viewer-$VERSION-source.zip" \
+            --approval-timeout 0
+
+      - name: Collect the release files
+        run: |
+          cp dist/zen-source-viewer.zip "release/zen-source-viewer-$VERSION.zip"
+          XPI=$(ls web-ext-artifacts/*.xpi 2>/dev/null | head -n 1 || true)
+          if [ -n "$XPI" ]; then
+            cp "$XPI" "release/zen-source-viewer-$VERSION.xpi"
+          fi
+          ls -la release
+
+      - name: Push the version commit and tag
+        run: git push origin "HEAD:$GITHUB_REF_NAME" "v$VERSION"
+
+      - name: Create the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          {
+            echo "## Download"
+            echo
+            echo "- Install from addons.mozilla.org: this version was submitted to the public listing and is available there after Mozilla's review."
+            if [ -f "release/zen-source-viewer-$VERSION.xpi" ]; then
+              echo "- \`zen-source-viewer-$VERSION.xpi\`: the add-on, signed by Mozilla. Open it in Firefox to install."
+            fi
+            echo "- \`zen-source-viewer-$VERSION.zip\`: the unsigned add-on package (to load in about:debugging)."
+            echo "- \`zen-source-viewer-$VERSION-source.zip\`: the source code, as submitted to addons.mozilla.org."
+            echo
+          } > release-notes.md
+          gh release create "v$VERSION" release/* \
+            --title "Zen Source Viewer $VERSION" \
+            --notes-file release-notes.md \
+            --generate-notes \
+            --verify-tag
+
+      - name: Keep the build files
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zen-source-viewer-release
+          path: |
+            release/
+            web-ext-artifacts/
+          if-no-files-found: ignore

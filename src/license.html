@@ -1,9 +1,17 @@
 <!DOCTYPE html>
 <!--
- (c) 2026 Subham Mahesh
- This Source Code Form is subject to the terms of the Mozilla Public
- License, v. 2.0. If a copy of the MPL was not distributed with this
- file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ Copyright 2026 Subham Mahesh
+
+ Licensed under the File-Level Copyleft License (FLCL), Version 1.0
+ (the "License"); you may not use this file except in compliance
+ with the License. You may obtain a copy of the License in the
+ LICENSE-FLCL file accompanying this work.
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ implied. See the License for the specific language governing
+ permissions and limitations under the License.
 -->
 <html>
 <head>
@@ -186,6 +194,7 @@ details.license-text pre {
         <span class="role">Modifications</span>
         <span class="name">Subham Mahesh</span>
         <span class="detail">Zen Source Viewer &mdash; &copy; 2026 Subham Mahesh</span>
+        <span class="detail"><a href="https://github.com/subham8907/Zen-Source-Viewer" target="_blank">Source code</a></span>
     </div>
 </div>
 
@@ -200,22 +209,49 @@ details.license-text pre {
         <li>Code is shown in a CodeMirror 6 editor (editing, search and replace, code folding, autocompletion, JSON checking); edited files can be downloaded alone or as a new zip.</li>
         <li>A Changes panel lists edited files with added/removed line counts, shows each file's diff (inline or side by side) and can revert a single change, a whole file or everything.</li>
         <li>All third-party libraries are installed from npm and bundled at build time: zip.js 2, js-beautify, strip-json-comments (instead of JSON.minify) and @noble/hashes (instead of SparkMD5).</li>
+        <li>Compare two versions of an add-on: fetch each version from a URL or addons.mozilla.org, or upload a file, and see every changed file as a diff.</li>
+        <li>Patches like git: download edits or the differences between two versions as a .patch file, and apply .patch/.diff files to an add-on, including binary files (using jsdiff and fflate).</li>
         <li>New name (Zen Source Viewer), add-on ID and icon.</li>
     </ul>
     <p style="margin-top: 12px">Each modified source file carries a notice saying it was modified by Subham Mahesh.</p>
 </div>
 
+<h2 class="section-title">Privacy</h2>
+<div class="card">
+    <p>Zen Source Viewer does not collect, store or share any personal data, and has no analytics or tracking.
+    It only connects to a website when you ask it to fetch an add-on or file; that website's own privacy policy applies
+    (for addons.mozilla.org, the <a href="https://www.mozilla.org/privacy/" target="_blank">Mozilla Privacy Policy</a>).</p>
+    <div class="links">
+        <a href="https://github.com/subham8907/Zen-Source-Viewer/blob/master/PRIVACY.md" target="_blank">Read the full privacy policy</a>
+    </div>
+</div>
+
 <h2 class="section-title">License of Zen Source Viewer</h2>
 <div class="card">
-    <p>The original work and these modifications are distributed under the
-    <strong>Mozilla Public License, version 2.0</strong> (MPL-2.0).</p>
+    <p>Zen Source Viewer is made of files under two licenses. The license of each
+    source file is stated at the top of that file.</p>
+    <p><strong>Mozilla Public License, version 2.0</strong> (MPL-2.0): the original work
+    by Rob Wu and its contributors, and every file of it that Subham Mahesh modified
+    (these carry a &ldquo;Modified by Subham Mahesh&rdquo; notice).</p>
     <blockquote>This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.</blockquote>
     <details class="license-text" id="project-license">
-        <summary>Show the full license text</summary>
+        <summary>Show the full MPL-2.0 text</summary>
+        <pre></pre>
+    </details>
+    <p style="margin-top: 12px"><strong>File-Level Copyleft License, version 1.0</strong> (FLCL-1.0):
+    files written entirely by Subham Mahesh, who solely owns their copyright, such as the
+    compare page, review report and notes, locale diff, quick open, file operations,
+    the privacy consent pages and the icons.</p>
+    <blockquote>Copyright 2026 Subham Mahesh. Licensed under the File-Level Copyleft License (FLCL), Version 1.0.</blockquote>
+    <details class="license-text" id="flcl-license">
+        <summary>Show the full FLCL-1.0 text</summary>
         <pre></pre>
     </details>
     <div class="links">
-        <a href="LICENSE.txt" target="_blank">LICENSE.txt (bundled)</a>
+        <a href="LICENSE.txt" target="_blank">LICENSE.txt (MPL-2.0, bundled)</a>
+        <a href="LICENSE-FLCL.txt" target="_blank">LICENSE-FLCL.txt (FLCL-1.0, bundled)</a>
+        <a href="NOTICE.txt" target="_blank">NOTICE.txt (FLCL files)</a>
+        <a href="https://github.com/subham8907/Zen-Source-Viewer" target="_blank">Source code on GitHub</a>
         <a href="https://mozilla.org/MPL/2.0/" target="_blank">MPL 2.0 on mozilla.org</a>
     </div>
 </div>
