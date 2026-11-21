@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<!-- Generated from LICENSE.txt by external/licenses/flpl-html.js. Do not edit by hand. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="theme.js"></script>
+<title>File-Level Permissive License (FLPL)</title>
+<style>
+:root {
+    color-scheme: light dark;
+    --bg: #ffffff; --surface: #f7f7f5; --text: #1b1b1b; --muted: #5c5c5c;
+    --border: #d9d9d4; --accent: #1f4e79; --code-bg: #f3f3f0; --mark: #fff6d6;
+}
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {--bg: #141414; --surface: #1b1b1b; --text: #e8e8e6; --muted: #a6a6a2;
+        --border: #343432; --accent: #9cc1e6; --code-bg: #1f1f1e; --mark: #3a3420;}
+}
+:root[data-theme="dark"] {color-scheme: dark; --bg: #141414; --surface: #1b1b1b; --text: #e8e8e6; --muted: #a6a6a2;
+    --border: #343432; --accent: #9cc1e6; --code-bg: #1f1f1e; --mark: #3a3420;}
+:root[data-theme="light"] {color-scheme: light;}
+* {box-sizing: border-box;}
+body {margin: 0; background: var(--bg); color: var(--text);
+    font: 17px/1.65 "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+    -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+    text-align: left; hyphens: none; -webkit-hyphens: none; word-break: normal; overflow-wrap: normal;}
+main {max-width: 780px; margin: 0 auto; padding: 56px 24px 96px;}
+a {color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px;}
+.doc-header {margin-bottom: 36px; padding-bottom: 24px; border-bottom: 2px solid var(--text); text-align: center;}
+h1 {margin: 0 0 6px; font-size: 32px; font-weight: 700; line-height: 1.25; letter-spacing: 0;}
+.version {margin: 0; font-size: 16px; color: var(--muted);}
+.clause {margin: 0 0 34px; scroll-margin-top: 16px;}
+.clause h2 {margin: 0 0 14px; font-size: 20px; font-weight: 700; line-height: 1.35;}
+.clause-head {font-weight: 700;}
+.clause.appendix {margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border);}
+.sub {margin: 0 0 12px; padding-left: 2.2em; text-indent: -2.2em; scroll-margin-top: 16px;}
+.sub > *:not(p:first-child) {text-indent: 0;}
+.sub:target, .clause:target > h2 {background: var(--mark);}
+.sub-ref {display: inline-block; min-width: 2.2em; text-indent: 0; color: inherit; text-decoration: none;}
+p {margin: 0 0 12px;}
+dfn {font-style: normal; font-weight: 700;}
+.lead {font-weight: 700;}
+.items {margin: 4px 0 12px; padding: 0; list-style: none; text-indent: 0;}
+.items li {position: relative; margin: 0 0 8px; padding-left: 3em;}
+.item-num {position: absolute; left: 0;}
+.sub-items {margin: 8px 0 0;} .sub-items li {padding-left: 2.2em;}
+.divider {margin: 44px 0 32px; text-align: center; font-weight: 700; letter-spacing: 0.06em;}
+.preamble {margin: 0 0 28px;}
+pre.notice {margin: 4px 0 14px; padding: 14px 18px; overflow-x: auto; text-indent: 0;
+    font: 13.5px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: pre;
+    background: var(--code-bg); border: 1px solid var(--border);}
+code {font: 0.88em ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;}
+@media (max-width: 600px) {main {padding: 32px 16px 64px;} body {font-size: 16px;} h1 {font-size: 26px;}
+    .sub {padding-left: 1.8em; text-indent: -1.8em;} .sub-ref {min-width: 1.8em;}
+    pre.notice {white-space: pre-wrap; padding: 12px 14px; font-size: 12.5px;}}
+@media print {
+    :root {--bg: #fff; --text: #000; --muted: #444; --accent: #000; --surface: #fff; --code-bg: #fff; --border: #999;}
+    body {font-size: 11pt;} main {max-width: none; padding: 0;}
+    a {text-decoration: none;} .clause h2 {break-after: avoid;} .sub, .items li {break-inside: avoid;}
+}
+</style>
+</head>
+<body>
+<main>
+<header class="doc-header">
+<h1>File-Level Permissive License (FLPL)</h1>
+<p class="version">Version 1.0, November 2026</p>
+</header>
+<article class="license">
+<p class="divider">TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION</p>
+<section class="clause" id="s1">
+<h2><span class="num">1.</span> Definitions, Interpretation, and Names.</h2>
+<section class="sub" id="s1-a">
+<p><span class="sub-ref">(a)</span> <strong>Definitions.</strong> In this License:</p>
+<p>&quot;License&quot; means Sections 1 to 12 and Appendices A and B, each as varied for a file by any Licensor Variation(s) applying to that file under Appendix B.</p>
+<p>&quot;Licensor&quot; means the owner of IP Rights in the Work, or anyone authorized by that owner, that grants this License.</p>
+<p>&quot;Individual&quot; means a natural person or other entity that is not a Legal Entity.</p>
+<p>&quot;Legal Entity&quot; means the acting entity, other than an Individual, together with all of its Affiliates.</p>
+<p>&quot;Affiliate&quot; means, in relation to any entity, any other entity that Controls, is Controlled by, or is under common Control with that entity.</p>
+<p>&quot;Control&quot; (together with the related expressions &quot;Controls&quot;, &quot;Controlled by&quot;, and &quot;under common Control with&quot;) means:</p>
+<ol class="items">
+<li><span class="item-num">(i)</span> the power, direct or indirect, to cause the direction or management of an entity, whether by contract or otherwise;</li>
+<li><span class="item-num">(ii)</span> ownership, direct or indirect, of fifty per cent (50%) or more of the outstanding shares or voting rights of an entity; or</li>
+<li><span class="item-num">(iii)</span> beneficial ownership of such shares or voting rights.</li>
+</ol>
+<p>&quot;You&quot; (also &quot;Your&quot;, &quot;Yours&quot;, and &quot;Yourself&quot;) means an Individual or Legal Entity exercising permissions under this License.</p>
+<p>&quot;Source&quot; form means the preferred form for making any modification, including source code, schematics, net lists, board layouts, mechanical drawings, CAD files, documentation source, and configuration files.</p>
+<p>&quot;Object&quot; form means any form resulting from mechanical transformation or translation of a Source form, or from applying a Source form to physical material. It includes compiled object code, generated documentation, instantiated hardware designs, conversions to other media types, and intermediate forms such as bytecode, FPGA bitstreams, moulds, artwork, and mask works.</p>
+<p>&quot;Work&quot; means the work of authorship, in Source or Object form, made available under this License, as indicated by a rights notice included in or attached to it. Where the Work or a copy of it, whether software, data, a physical object, or anything else, cannot hold the notice, or the notice cannot be applied to it directly, the notice may be given in accompanying physical or digital documentation, or in any readable format and any medium reasonably accessible to recipients.</p>
+<p>&quot;IP Rights&quot; means copyright, patents, and Other IP Rights, but excludes trademarks. Copyright, patents, and each distinct category of Other IP Rights shall be treated separately. Any reference to &quot;IP Rights&quot; shall apply separately to each such right or category of rights, subject to the definition of &quot;Other IP Rights&quot; and the explanation accompanying that definition. &quot;Other IP Rights&quot; means:</p>
+<ol class="items">
+<li><span class="item-num">(i)</span> rights in industrial designs and other design rights, whether registered or not;</li>
+<li><span class="item-num">(ii)</span> rights in layout-designs (topographies) of integrated circuits, including semiconductor topography rights and mask work rights; and</li>
+<li><span class="item-num">(iii)</span> database rights.</li>
+</ol>
+<p>For the avoidance of doubt, each distinct right or type of right identified above, including each right or type of right named within a numbered item, is a separate category of Other IP Rights and is treated separately from every other category. Any reference in this License to &quot;Other IP Rights&quot; applies separately to each relevant category and does not treat those categories as one collective category.</p>
+<p>&quot;Protected Material&quot; means material protected by IP Rights.</p>
+<p>&quot;Derivative Works&quot; means the following files, determined file by file according to each file's Source form:</p>
+<ol class="items">
+<li><span class="item-num">(i)</span> any file, in Source or Object form, based on or derived from a file of the Work, whose changes, taken as a whole, represent an original work of authorship (a changed file that does not meet this standard remains part of the Work); and</li>
+<li><span class="item-num">(ii)</span> any new or existing file containing Protected Material copied or adapted from Covered Material. Other material in such a file is not thereby licensed under this License.</li>
+</ol>
+<p>A file that incorporates no Protected Material from Covered Material is not a Derivative Work.</p>
+<p>&quot;Covered Material&quot; means the Work and its Derivative Works. A &quot;Covered File&quot; is a file of either.</p>
+<p>&quot;Contribution&quot; means any work of authorship (including the original Work and changes to Covered Material) that the owner of IP Rights in it, or anyone authorized to submit it on that owner's behalf, intentionally submits to the Licensor for inclusion in the Work, in any communication to the Licensor or its representatives (including through mailing lists, version control, and issue tracking systems managed by or for the Licensor), unless the communication is conspicuously marked, or otherwise designated in writing by that owner, as &quot;Not a Contribution.&quot;</p>
+<p>&quot;Contributor&quot; means the Licensor and anyone on whose behalf the Licensor has received a Contribution and incorporated it in the Work.</p>
+<p>&quot;Separate File&quot; means a file that is not a file of the Work and whose Source form incorporates no Protected Material from Covered Material. Material received under separate terms within a Covered File (Section 4(f)) is not a Separate File.</p>
+<p>A file does not incorporate Protected Material from Covered Material, or become Covered Material, merely because it:</p>
+<ol class="items">
+<li><span class="item-num">(i)</span> is aggregated, combined, compiled, linked (statically or dynamically), packaged, Conveyed, assembled, or physically connected with Covered Files;</li>
+<li><span class="item-num">(ii)</span> calls, references, implements, or interoperates with their interfaces;</li>
+<li><span class="item-num">(iii)</span> restates their interface declarations (such as names, signatures, types, constants, and data layouts) as needed to do so, without copying their implementation; or</li>
+<li><span class="item-num">(iv)</span> has an Object form that incorporates, by compilation or similar mechanical transformation, any amount of their interface definitions, macros, inline functions, or templates.</li>
+</ol>
+<p>&quot;Larger Work&quot; means any work, in Source or Object form, that combines Covered Files with one or more Separate Files. Merely placing files together is combining them. A Larger Work remains one even if merged into a single Object-form file. Compiling or merging Covered Files (including Section 4(f) material in them) without any Separate File creates no Larger Work; the result is Covered Material in Object form.</p>
+<p>&quot;Propagate&quot; means to do anything with Covered Material that, without permission, would make You directly or secondarily liable for infringing IP Rights under applicable law, other than executing or otherwise using it on a computer or device, or changing a private copy. It includes copying, distribution (with or without changes), making available to the public, and, in some countries, other activities.</p>
+<p>&quot;Convey&quot; means to Propagate in any way that enables others to make or receive copies. Mere interaction with a user through a computer network, without transfer of a copy, is not Conveying.</p>
+<p>&quot;Licensor Variation(s)&quot; has the meaning given in Appendix B(a).</p>
+</section>
+<section class="sub" id="s1-b">
+<p><span class="sub-ref">(b)</span> <strong>Interpretation.</strong></p>
+<ol class="items">
+<li><span class="item-num">(i)</span> &quot;Authorship&quot; includes design.</li>
+<li><span class="item-num">(ii)</span> A &quot;rights notice&quot; is a notice pertaining to IP Rights.</li>
+<li><span class="item-num">(iii)</span> &quot;Including&quot; and &quot;such as&quot; introduce examples and do not limit the general words before them.</li>
+<li><span class="item-num">(iv)</span> A reference to a subsection or paragraph without a Section number is to one in the same Section. A reference to a paragraph without a subsection letter is to one in the same subsection.</li>
+<li><span class="item-num">(v)</span> Headings are for convenience only.</li>
+<li><span class="item-num">(vi)</span> Subject to the terms and conditions of this License, for Conveying and Propagating, no restriction beyond them shall be implied.</li>
+<li><span class="item-num">(vii)</span> Any doubt whether this License restricts an act is resolved in favor of permitting it, unless Licensor Variation(s) expressly provide otherwise.</li>
+<li><span class="item-num">(viii)</span> No Licensor or Contributor may, retroactively or prospectively, impose any obligation, or alter any right, under this License in material already received, except as expressly stated in the text of Licensor Variation(s) that applied to that material when it was received (see also Appendix B(e)).</li>
+<li><span class="item-num">(ix)</span> Sections 2 and 3 do not apply to any IP Rights that this License does not govern. Except as they expressly state, they grant no license or other right under any IP Rights, including Other IP Rights, of any Licensor or Contributor, whether by implication, estoppel, or otherwise. For the avoidance of doubt, paragraphs (vi) and (vii) continue to apply to acts within the licenses that Sections 2 and 3 expressly grant, and this paragraph does not restrict those acts.</li>
+<li><span class="item-num">(x)</span> Sections 2 and 3 grant licenses only under IP Rights, including Other IP Rights, that this License governs.</li>
+</ol>
+<p>(xi)   The licenses in Sections 2 and 3 are granted once by each Contributor and each Licensor, when the relevant Contribution is first submitted or made available under this License, whichever occurs first. They extend to everyone who then or later receives Covered Material other than under a sublicense; a later receipt only identifies who benefits. Whether the relevant Contributor or Licensor may grant those licenses is determined at that time. Anyone who later acquires or controls those IP Rights, or an exclusive license under them, by any means (including assignment, inheritance, merger, or insolvency), must respect the prior grant made under this License. No Contributor, Licensor, later acquirer, or controller may revoke that grant, except as this License expressly permits. Each must honor the relevant Contributor's or Licensor's waivers, notices, and failures to give notice under Section 10. Any Contributor or Licensor that transfers those IP Rights or grants an exclusive or non-exclusive license under them must honor the prior grant made under this License. This interpretation applies to all parts of this License, not just Sections 2 and 3.</p>
+<p>(xii)  Whether or not under a sublicense, You must comply with the terms and conditions of this License.</p>
+<p>(xiii) Wherever this License uses the term &quot;sublicense&quot;, it shall be read as a sublicense that may be delegated by further sublicenses. A sublicense may limit or prohibit such further delegation. It may also define its own cure and restoration provisions.</p>
+<p>(xiv)  Chains of sublicenses. A sublicense includes any chain of sublicenses, each granted under the one before (&quot;delegated sublicenses&quot;). Chains that start under the same sublicense are its &quot;branches&quot;. A chain is read as one sublicense, and the first sublicense in it (the &quot;main sublicense&quot;) prevails over any conflicting delegated sublicense. Whether sublicenses are the same, or in one chain, depends on who grants each and under which sublicense, not on their terms. Anyone may grant several sublicenses for the same copy, and a recipient may rely on any of them. However, a breach of a delegated sublicense is also a breach of the main sublicense. Unless the main sublicense allows it, the recipient cannot avoid that breach by relying on another branch of the main sublicense granted by the Individual or Legal Entity that granted the breached delegated sublicense.</p>
+<p>(xv)   Anyone who receives Covered Material under a sublicense never receives rights in it directly under this License. If that sublicense terminates, the recipient therefore has no rights in that Covered Material under this License, because it never had any directly; this License itself does not terminate.</p>
+<p>(xvi)  Anyone may always receive rights directly under this License by obtaining the Covered Material other than under a sublicense. Anyone may also receive rights under a different sublicense, subject to paragraph (xiv).</p>
+<p>(xvii) Regardless of what any sublicense says, any breach of this License is infringement, subject to Section 10, and where this License expressly provides that a license terminates, it terminates subject to Section 10. No sublicense can protect anyone from that infringement or termination, excuse or waive it, or change how Section 10 applies to it. A breach of a sublicense may also be a breach of contract under applicable law.</p>
+<p>(xviii) Where this License uses &quot;worldwide&quot;, it includes all locations on Earth; all locations on or within every other planet; all other parts of the universe; and any place beyond the universe, whether known now or discovered later.</p>
+</section>
+<section class="sub" id="s1-c">
+<p><span class="sub-ref">(c)</span> <strong>Names and Identifiers.</strong> The names and identifiers below are labels only. Anyone may use other labels, and a file's terms are those set by its notices, not by any label.</p>
+<ol class="items">
+<li><span class="item-num">(i)</span> <strong>Base forms.</strong> The name is &quot;File-Level Permissive License 1.0&quot;, the short name is &quot;FLPL 1.0&quot;, and the identifier is &quot;FLPL-1.0&quot;.</li>
+<li><span class="item-num">(ii)</span> Licensor Variation(s). Where any Licensor Variation(s) apply to a file, add &quot;-Licensor-Variations&quot; to the identifier and &quot; with Licensor Variations&quot; to the name and short name. For each named set of Licensor Variation(s) applied, in the order applied, then add a hyphen and the set's name (using letters and digits only) to the identifier, and the set's name in quotation marks to the name and short name.</li>
+<li><span class="item-num">(iii)</span> <strong>Example.</strong> A file with one set of Licensor Variation(s) named &quot;Acme&quot; has the identifier &quot;FLPL-1.0-Licensor-Variations-Acme&quot; and the short name: FLPL 1.0 with Licensor Variations &quot;Acme&quot;.</li>
+</ol>
+</section>
+</section>
+<section class="clause" id="s2">
+<p class="run-in"><strong class="clause-head">2. Grant of Copyright License.</strong> Subject to this License, each Contributor, including each Licensor, grants You a perpetual, worldwide, non-exclusive, no-charge, royalty-free copyright license, irrevocable except as Section 10(a) provides, to:</p>
+<section class="sub" id="s2-a">
+<p><span class="sub-ref">(a)</span> reproduce, prepare Derivative Works of, publicly display and perform, make, have made, use, repair, offer to sell, sell, import, otherwise transfer, Propagate, sublicense, and Convey Covered Material in Source or Object form;</p>
+</section>
+<section class="sub" id="s2-b">
+<p><span class="sub-ref">(b)</span> do every other act this License permits or requires You to do with Covered Material,</p>
+<p>in each case so far as copyright applies.</p>
+</section>
+</section>
+<section class="clause" id="s3">
+<h2><span class="num">3.</span> Grant of Patent and Other IP Licenses.</h2>
+<section class="sub" id="s3-a">
+<p><span class="sub-ref">(a)</span> <strong>Grant.</strong> Subject to this License, each Contributor, including each Licensor, grants You a perpetual, worldwide, non-exclusive, no-charge, royalty-free license, irrevocable except as subsection (b) and Section 10(a) provide, under the patent claims and Other IP Rights that the relevant Contributor or Licensor may license and that are necessarily infringed by its Contribution(s), alone or in combination with the Work to which those Contributions were submitted, to do every act licensed under Section 2, including to sublicense.</p>
+</section>
+<section class="sub" id="s3-b">
+<p><span class="sub-ref">(b)</span> <strong>Defensive Termination.</strong> If You institute litigation against any entity (including a cross-claim or counterclaim) alleging that the Work, or a Contribution incorporated in it, directly, contributorily, or secondarily infringes any patent or Other IP Rights, Your licenses under this Section for that Work terminate on the date that litigation is filed, and any continued exercise of them is infringement.</p>
+<p><strong class="lead">Explanation.</strong> For the purposes of Section 3(b), termination applies only to the license under the patent rights or the specific category of Other IP Rights on which the infringement allegation is based. Each distinct right or type of right identified in the definition of &quot;Other IP Rights&quot; in Section 1(a), including each right or type of right named within a numbered item, constitutes a separate category. Termination of a license under one category does not terminate or otherwise affect licenses under any other category or under patent rights, unless those rights are independently subject to termination under Section 3(b). Likewise, termination of a patent license does not affect licenses under Other IP Rights.</p>
+</section>
+<section class="sub" id="s3-c">
+<p><span class="sub-ref">(c)</span> This Section may grant Patent and Other IP Licenses (Other IP Rights) to the extent recognized under the laws of the applicable jurisdiction. Additionally, it is the recipient's responsibility to verify whether such Patent and Other IP Licenses have been granted under this License. If this licensing scheme is not recognized for a particular category of rights, no license for that category is granted. A failure to grant a license under one category of IP Rights does not affect a license granted under another category. A breach of section 3(c) shall not constitute a violation of this License under Section 10.</p>
+</section>
+<section class="sub" id="s3-d">
+<p><span class="sub-ref">(d)</span> <strong>Retention of Rights.</strong> Nothing in this License shall be construed as a representation or warranty that any Licensor or Contributor owns or holds any patent or Other IP Rights under this Section 3. Each Licensor or Contributor grants only those rights that it is legally entitled to license, and all rights not expressly granted under this License are reserved by their respective owners.</p>
+</section>
+</section>
+<section class="clause" id="s4">
+<p class="run-in"><strong class="clause-head">4. Propagating and Conveying.</strong> You may Propagate and Convey Covered Material in any medium, with or without changes, in Source or Object form, if You comply with this Section. Its conditions apply only to Covered Files and, within them, only to Covered Material and Your own changes.</p>
+<section class="sub" id="s4-a">
+<p><span class="sub-ref">(a)</span> <strong>Copy of This License and Duty to Inform.</strong></p>
+<ol class="items">
+<li><span class="item-num">(i)</span> You must give every other recipient of Covered Material a complete, readable copy of this License, in any medium or format reasonably accessible to them. It need not be a separate text file.</li>
+<li><span class="item-num">(ii)</span> You must also inform them of any Licensor Variation(s), and of any description under subsection (b)(iv), that apply to that Covered Material.</li>
+<li><span class="item-num">(iii)</span> For Source form, keeping the notices required by subsection (b) and Appendix B(b) meets the duty in paragraph (ii).</li>
+<li><span class="item-num">(iv)</span> For Object form, a statement like the example in Appendix A(b), together with any applicable notice like the examples in Appendix A(c) and B(f), meets paragraphs (i) and (ii), provided that the copies it refers to remain obtainable at no charge while You Convey that Object form. The statement may be given in the documentation and/or other materials provided with that Object form, including by reproducing it in a graphical or other user interface of that Object form. It need not identify individual files if it says what governs the Covered Material in that Object form.</li>
+<li><span class="item-num">(v)</span> Paragraphs (iii) and (iv) do not relax any applicable requirement of subsection (b).</li>
+</ol>
+</section>
+<section class="sub" id="s4-b">
+<p><span class="sub-ref">(b)</span> <strong>Notices.</strong></p>
+<ol class="items">
+<li><span class="item-num">(i)</span> In the Source form of Covered Material You Convey, You must retain all rights, trademark, and attribution notices from the Source form of the Work, except notices that do not pertain to any part of the Covered Material You Convey.</li>
+<li><span class="item-num">(ii)</span> If the Work's distribution includes a &quot;NOTICE&quot; text file, each copy of Covered Material You Convey must include a readable copy of the attribution notices in that file, except notices that do not pertain to any part of the Covered Material You Convey, in at least one of these places: a NOTICE text file distributed with it; its Source form or documentation, if provided with it; a display generated by it, if and wherever such third-party notices normally appear; or any other medium or format reasonably accessible to recipients. The NOTICE file is for information only and does not change this License. You may add Your own attribution notices to Covered Material You Convey, alongside or as an addendum to the NOTICE text from the Work, provided they cannot be read as changing this License.</li>
+<li><span class="item-num">(iii)</span> You may add Your own rights notices to Your changes, in any medium or format reasonably accessible to recipients.</li>
+<li><span class="item-num">(iv)</span> Where Section 12(d) applies, unless anything having the force of law prohibits doing so, each copy of Covered Material You Convey must be accompanied by a description of the limitations and affected parts, given in any medium or format reasonably accessible to recipients and detailed enough for a recipient of ordinary skill to understand (Appendix A(c) gives an example). No description is needed for a continuing obligation arising from Covered Material You Conveyed before compliance became impossible.</li>
+</ol>
+</section>
+<section class="sub" id="s4-c">
+<p><span class="sub-ref">(c)</span> <strong>Source Form.</strong> You may Convey or make available the Source form of Covered Material, whether separately or within a Larger Work, under this License or a sublicense. You need not make the Source form available when You Convey Covered Material in Object form. Nothing in this License requires any Licensor or Contributor to make the Source form of any Covered Material available, or gives anyone a right to compel its disclosure.</p>
+</section>
+<section class="sub" id="s4-d">
+<p><span class="sub-ref">(d)</span> <strong>Direct Licenses, Sublicenses, and Other Material.</strong></p>
+<ol class="items">
+<li><span class="item-num">(i)</span> Anyone who receives Covered Material, in any form, other than under a sublicense receives the licenses under Sections 2 and 3 directly from each Contributor, subject to this License.</li>
+<li><span class="item-num">(ii)</span> A sublicense is governed by this License and, as to Covered Material, grants no more rights than this License does. It may terminate under its own terms.</li>
+<li><span class="item-num">(iii)</span> A copy of Covered Material may also contain material not governed by this License, such as Separate Files or subsection (f) material. Terms governing that material may restrict acts with that copy, and a breach of them is not in itself non-compliance with this License.</li>
+</ol>
+</section>
+<section class="sub" id="s4-e">
+<p><span class="sub-ref">(e)</span> <strong>Your Changes.</strong> You may license Your changes to Covered Material, including any change You make within a Covered File (even to subsection (f) material), under this License, under terms of Your choice, or both. For changes You Convey without stating other terms, You grant Your IP Rights in them under this License. They are licensed without Licensor Variation(s), unless Licensor Variation(s) applying to that file expressly require Your changes to be subject to them. Material You copy or adapt into another file follows the rules for that file. When You Propagate or Convey a file any portion of which carries Licensor Variation(s), You must comply with those Licensor Variation(s). Nothing in this subsection prevents mixing material in a Covered File under subsection (f).</p>
+</section>
+<section class="sub" id="s4-f">
+<p><span class="sub-ref">(f)</span> <strong>Material Under Separate Terms.</strong></p>
+<ol class="items">
+<li><span class="item-num">(i)</span> A Covered File may also contain material You received under separate terms, including under this License from the same or a different Licensor, if those terms permit such combination, explicitly or implicitly.</li>
+<li><span class="item-num">(ii)</span> That material, as received, remains under those terms (for material received under this License, as they applied to it on receipt). Subsection (e) governs Your changes to it.</li>
+<li><span class="item-num">(iii)</span> This License, as it applies to the rest of the file, does not apply to that material, including within a Larger Work.</li>
+<li><span class="item-num">(iv)</span> When You Convey or make available the Source form of such a file, You must identify, by any reasonable method, that the file contains such material and the terms on which it was received; for example, by a notice in or accompanying the file, or by machine-readable license identifiers. You need not identify the material's source or location within the file.</li>
+</ol>
+</section>
+<section class="sub" id="s4-g">
+<p><span class="sub-ref">(g)</span> <strong>Larger Works.</strong> You may license Separate Files, and a Larger Work as a whole, under terms of Your choice, and Convey them with Covered Material. Those terms need not reference, include, or be compatible with this License. They do not apply to Covered Material in the Larger Work, in Source or Object form, which remains under this License (subsection (f) material remaining under its own terms).</p>
+</section>
+</section>
+<section class="clause" id="s5">
+<h2><span class="num">5.</span> Submission of Contributions.</h2>
+<section class="sub" id="s5-a">
+<p><span class="sub-ref">(a)</span> <strong>Terms of Contributions.</strong> Any Contribution You submit is made under this License, without additional terms or conditions, except that You may explicitly submit any part of it that is a Separate File under other terms; Sections 2 and 3 then apply to that file only as far as those terms allow. Sections 4(e) and 4(f) and Appendix B apply to Your Contributions as they apply to Derivative Works You Convey, except that a Contribution is licensed under this License as this subsection provides, not under terms of Your choice.</p>
+</section>
+<section class="sub" id="s5-b">
+<p><span class="sub-ref">(b)</span> <strong>Your Licenses Unaffected.</strong> Your failure to comply with this License, including in submitting a Contribution, does not affect the licenses You grant for that Contribution under Sections 2 and 3.</p>
+</section>
+<section class="sub" id="s5-c">
+<p><span class="sub-ref">(c)</span> <strong>Separate Agreements.</strong> Nothing in this License supersedes or changes any separate agreement You have executed with the Licensor regarding Your Contributions.</p>
+</section>
+</section>
+<section class="clause" id="s6">
+<p class="run-in"><strong class="clause-head">6. Trademarks.</strong> This License grants no permission to use the Licensor's trade names, trademarks, service marks, or product names, except as required for reasonable and customary use in describing the Work's origin and reproducing the content of the NOTICE file.</p>
+</section>
+<section class="clause" id="s7">
+<p class="run-in"><strong class="clause-head">7. Disclaimer of Warranty.</strong> Unless required by applicable law or agreed to in writing, Licensor provides the Work (and each Contributor provides its Contributions) on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied, including, without limitation, any warranties or conditions of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE. You are solely responsible for determining the appropriateness of using or redistributing the Work and assume any risks associated with Your exercise of permissions under this License. This Section applies equally to any product made from the Work, including as to its safety, manufacturability, and compliance with any law, standard, or certification.</p>
+</section>
+<section class="clause" id="s8">
+<p class="run-in"><strong class="clause-head">8. Limitation of Liability.</strong> In no event and under no legal theory, whether in tort (including negligence), contract, or otherwise, unless required by applicable law (such as deliberate and grossly negligent acts) or agreed to in writing, shall any Contributor be liable to You for damages, including any direct, indirect, special, incidental, or consequential damages of any character arising as a result of this License or out of the use or inability to use the Work (including but not limited to damages for loss of goodwill, work stoppage, computer failure or malfunction, or any and all other commercial damages or losses), even if such Contributor has been advised of the possibility of such damages. This Section includes damages from the manufacture, distribution, or use of any product made from the Work, including costs of recall, repair, or replacement.</p>
+</section>
+<section class="clause" id="s9">
+<p class="run-in"><strong class="clause-head">9. Accepting Warranty or Additional Liability.</strong> When Conveying Covered Material, You may offer, and charge for, support, warranty, indemnity, or other liability obligations and/or rights consistent with this License, but only on Your own behalf and sole responsibility, and only if You agree to indemnify, defend, and hold each Contributor harmless for any resulting liability incurred by, or claims asserted against, it.</p>
+</section>
+<section class="clause" id="s10">
+<h2><span class="num">10.</span> Non-Compliance, Cure, and Termination.</h2>
+<section class="sub" id="s10-a">
+<p><span class="sub-ref">(a)</span> <strong>Limited Termination.</strong> The only licenses under this License that terminate are licenses under Section 3, as Section 3(b) provides. All other rights continue, and no one who acquires IP Rights in the Work or a Contribution may terminate this License or any right under it. Instead, any non-compliant act regarding Covered Material that requires a license under Section 2 or 3 (including Propagating, Conveying, or using it) is unlicensed and is treated as infringement of the applicable Contributors' rights under applicable law. Compliant acts remain licensed.</p>
+</section>
+<section class="sub" id="s10-b">
+<p><span class="sub-ref">(b)</span> <strong>Cure Period.</strong> If a Contributor notifies You of a failure to comply, and it is that Contributor's first such notice to You regarding the Work, that Contributor shall bring no claim and seek no remedy against You for that failure if You cure it within thirty (30) days of receiving the notice.</p>
+</section>
+<section class="sub" id="s10-c">
+<p><span class="sub-ref">(c)</span> <strong>Cessation Without Notice.</strong> If You cease all non-compliance, a Contributor shall bring no claim and seek no remedy for it unless it notifies You of it within sixty (60) days after You cease.</p>
+</section>
+<section class="sub" id="s10-d">
+<p><span class="sub-ref">(d)</span> <strong>Failure to Cure.</strong> If You do not cure within the period in subsection (b), or if subsection (b) does not apply because that Contributor has given You an earlier notice, that Contributor may pursue any remedy for infringement under applicable law, including for acts before the notice.</p>
+</section>
+<section class="sub" id="s10-e">
+<p><span class="sub-ref">(e)</span> <strong>Limitation Periods.</strong> All claims arising from non-compliance are subject to the statutes of limitation, prescription periods, and other time limits of applicable law. Except for the notice period in subsection (c), this Section does not extend, shorten, suspend, revive, or toll any such period.</p>
+</section>
+<section class="sub" id="s10-f">
+<p><span class="sub-ref">(f)</span> <strong>Downstream Recipients.</strong> Your non-compliance does not affect the rights under this License of anyone who received Covered Material from You, directly or indirectly, including Covered Files You changed, made, or Conveyed non-compliantly (Your changes in which are licensed to them, and to every later recipient, on the terms You Conveyed them under or, if You stated none, under this License), provided that they comply with this License.</p>
+</section>
+<section class="sub" id="s10-g">
+<p><span class="sub-ref">(g)</span> <strong>Your Non-Compliant Acts.</strong> Covered Files changed or made by a non-compliant act give You no rights under this License until You cure. After You cure, Your acts regarding them are licensed, but the earlier act remains infringement, subject to subsections (b), (c), and (h).</p>
+</section>
+<section class="sub" id="s10-h">
+<p><span class="sub-ref">(h)</span> <strong>Waiver.</strong> A Contributor may, by notice to the Individual or Legal Entity concerned, waive any past or ongoing infringement or non-compliance. A waiver:</p>
+<ol class="items">
+<li><span class="item-num">(i)</span> binds only that Contributor and waives only its rights;</li>
+<li><span class="item-num">(ii)</span> unless the notice expressly states otherwise, covers only the acts, Individuals or Legal Entities, and period it describes, and is irrevocable as to those acts; and</li>
+<li><span class="item-num">(iii)</span> does not change this License or grant rights beyond those it states.</li>
+</ol>
+</section>
+<section class="sub" id="s10-i">
+<p><span class="sub-ref">(i)</span> <strong>Form of Notice.</strong> Any notice under this Section is effective only if it is given in writing, or in any other form of communication valid for notices under applicable law, and, if a dispute about it arises, verifiable under the rules of evidence of applicable law as made by the Contributor giving it or by someone authorized to act for that Contributor.</p>
+</section>
+</section>
+<section class="clause" id="s11">
+<h2><span class="num">11.</span> Litigation.</h2>
+<section class="sub" id="s11-a">
+<p><span class="sub-ref">(a)</span> <strong>Remedies.</strong> Subject to Section 10, any remedy available under applicable law may be sought for infringement of rights in the Work or for breach of this License, in any court or authority having jurisdiction.</p>
+</section>
+</section>
+<section class="clause" id="s12">
+<h2><span class="num">12.</span> Miscellaneous.</h2>
+<section class="sub" id="s12-a">
+<p><span class="sub-ref">(a)</span> <strong>Complete Terms.</strong> This License contains all of the terms on its subject matter.</p>
+</section>
+<section class="sub" id="s12-b">
+<p><span class="sub-ref">(b)</span> <strong>Severability.</strong> Any provision held invalid or unenforceable shall be reformed only as far as necessary to make it enforceable, and enforced to the maximum extent permissible; the rest of this License remains fully effective.</p>
+</section>
+<section class="sub" id="s12-c">
+<p><span class="sub-ref">(c)</span> <strong>Effect of Applicable Law.</strong> This License does not authorize any act applicable law prohibits, but such an act is not in itself non-compliance with this License. Legal requirements of capacity, consent, or authorization still apply; where they do, this License is void or voidable, as that law provides and to that extent, for anyone unable to validly consent to it. Sections 7 and 8 apply to every use of the Work, whether licensed or not. An Individual exercising rights under this License on behalf of a Legal Entity represents that they are authorized to do so.</p>
+</section>
+<section class="sub" id="s12-d">
+<p><span class="sub-ref">(d)</span> <strong>Legal Impossibility.</strong> If anything having the force of law (such as a statute, judicial order, regulation, ordinance, order, bye-law, rule, notification, custom, or usage) makes it impossible for You to comply with any term of this License for some or all Covered Material:</p>
+<ol class="items">
+<li><span class="item-num">(i)</span> You must comply as far as possible;</li>
+<li><span class="item-num">(ii)</span> You must give the description Section 4(b)(iv) requires; and</li>
+<li><span class="item-num">(iii)</span> while, and to the extent that, compliance is impossible and You meet paragraphs (i) and (ii), Your failure to comply is not non-compliance and the acts concerned remain licensed. The affected terms apply again once the impossibility ends.</li>
+</ol>
+<p>This subsection does not apply to an impossibility You brought about to avoid any term of this License.</p>
+</section>
+<section class="sub" id="s12-e">
+<p><span class="sub-ref">(e)</span> <strong>Fair Use.</strong> This License is not intended to limit Your rights under fair use, fair dealing, or equivalent copyright doctrines, or equivalent exceptions to Other IP Rights.</p>
+</section>
+<section class="sub" id="s12-f">
+<p><span class="sub-ref">(f)</span> <strong>Moral and Personality Rights.</strong> To the extent that moral rights, rights of attribution or integrity, rights of publicity or privacy, or similar personality rights in the Work or a Contribution would otherwise be exercisable against You, the Licensor and each Contributor waive them to the fullest extent applicable law permits and, where they cannot be waived, agree not to assert them against You while You exercise Your rights under this License in compliance with it. This subsection applies only to the Work and, for each Contributor, its own Contribution; applies only in relation to You; and limits no condition of this License.</p>
+</section>
+<section class="sub" id="s12-g">
+<p><span class="sub-ref">(g)</span> <strong>Your Own Work.</strong> You may license Your own IP Rights, in any work, under this License. Any rights You hold other than IP Rights may be licensed under this License only by Licensor Variation(s). Anyone may give a copy of this License in any medium and format. Using this License, or giving a copy of it, does not create a lawyer-client relationship with its author, any Licensor, any Contributor, or anyone else. Nothing in this subsection imposes a condition or obligation under this License; rather, it grants permissions and clarifies legal relationships. Exercising those permissions does not, by itself, constitute a breach of this License.</p>
+</section>
+<section class="sub" id="s12-h">
+<p><span class="sub-ref">(h)</span> <strong>Formalities.</strong> The Licensor's rights notice under Appendix A(a), and each Contributor's submission of a Contribution (including any accompanying name or sign-off), constitute their respective written grants and authentication of the licenses under this License. Providing a rights notice that complies with Appendix A(a) constitutes the Licensor's signature, and this License is thereby signed by the Licensor. Similarly, an Object-form statement that complies with Appendix A(b), when provided by the Licensor, and any Licensor Variation(s) provided in accordance with Appendix B, constitute the Licensor's written grant, authentication, and signature of the licenses and Licensor Variation(s) to which they relate.</p>
+<p>Where applicable law recognizes a grant, authentication, or signature by conduct, the relevant conduct, such as making the Work or a Contribution available, or providing a notice file or other statement indicating that the Work is licensed under this License without fully complying with Appendix A(a), also constitutes such grant, authentication, and signature.</p>
+<p>Throughout this License, the term &quot;sign&quot;, including its grammatical variations and cognate expressions (such as &quot;signed&quot;, &quot;signature&quot;, and &quot;sign-off&quot;), shall be construed as described in this subsection and includes signing by concrete conduct.</p>
+<p>Subject to the terms and conditions of this License, including Sections 3(b) and 10, the licenses granted under this License do not lapse due to the non-exercise of any right, regardless of the duration of such non-exercise.</p>
+</section>
+</section>
+<section class="clause appendix" id="appendix-a">
+<h2>APPENDIX A<br>Notices and Statements</h2>
+<section class="sub" id="appendix-a-a">
+<p><span class="sub-ref">(a)</span> <strong>File Notice.</strong> To apply this License to a file, add the following notice to it:</p>
+<pre class="notice">+------------------------------------------------------------+
+| Copyright [yyyy] [name of copyright owner]                 |
+| Licensed under the File-Level Permissive License (FLPL),   |
+| Version 1.0 (the &quot;License&quot;). You may copy and distribute   |
+| this file, with or without changes, only in compliance     |
+| with the License. You may obtain a copy of the License     |
+| [in the LICENSE file accompanying this work / at           |
+| [location]].                                               |
+| Unless required by applicable law or agreed to in writing, |
+| this file is distributed under the License on an &quot;AS IS&quot;   |
+| BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,       |
+| either express or implied. See the License for the         |
+| specific language governing permissions and limitations    |
+| under the License.                                         |
++------------------------------------------------------------+</pre>
+<p>Complete the bracketed fields and keep one of the two alternatives for where a copy of the License can be obtained; the location given must remain obtainable at no charge. Put the notice in the comment syntax suited to the file's format. Where a file cannot hold a notice, or the notice cannot be applied to the file directly, give it in an accompanying notice file, or in any other document in any format, that identifies the file, or in any other way Section 1(a) allows. Placing the file's name and a brief description of its purpose next to the notice is recommended, to help identify the file in third-party archives.</p>
+</section>
+<section class="sub" id="appendix-a-b">
+<p><span class="sub-ref">(b)</span> <strong>Object-Form Statement.</strong> A statement such as the following meets, for Object form, the duty to inform in Section 4(a):</p>
+<pre class="notice">+------------------------------------------------------------+
+| This product includes files licensed under the File-Level  |
+| Permissive License (FLPL), Version 1.0[, with Licensor     |
+| Variation(s) &quot;[name]&quot;]. A copy of the License[, and of     |
+| those Licensor Variation(s),] is [included with this       |
+| product / available at [location]].                        |
++------------------------------------------------------------+</pre>
+<p>Delete any bracketed text that does not apply, and complete the rest.</p>
+</section>
+<section class="sub" id="appendix-a-c">
+<p><span class="sub-ref">(c)</span> <strong>Statement of Legal Limitations.</strong> A statement such as the following can give the description Section 4(b)(iv) requires:</p>
+<pre class="notice">+------------------------------------------------------------+
+| Because of [the law, order, or other measure having the    |
+| force of law, and where it applies], the following terms   |
+| of the File-Level Permissive License (FLPL), Version 1.0,  |
+| cannot be fully complied with for this product:            |
+| - [term, such as &quot;Section 4(b)(ii)&quot;]: [affected files or   |
+|   parts]: [what cannot be done, and what is done instead,  |
+|   if anything].                                            |
+| These terms are complied with as far as possible, and all  |
+| others in full.                                            |
++------------------------------------------------------------+</pre>
+<p>List each affected term separately.</p>
+</section>
+</section>
+<section class="clause appendix" id="appendix-b">
+<h2>APPENDIX B<br>Licensor Variations</h2>
+<p><strong class="lead">Purpose.</strong> This Appendix lets a Licensor vary this License for its own files.</p>
+<section class="sub" id="appendix-b-a">
+<p><span class="sub-ref">(a)</span> <strong>Licensor Variation(s).</strong> The Licensor of a file may, as to that file, waive any condition of this License, wholly or partly, add conditions, or amend or override any other provision of this License (each such change, or any number of them, being &quot;Licensor Variation(s)&quot;). Licensor Variation(s) are given with the file's Appendix A(a) notice or in a separate notice file, and are applied as subsection (f) describes. Licensor Variation(s) given outside a file must clearly identify each file they apply to; they then apply as if contained in each file so identified, and in no other.</p>
+</section>
+<section class="sub" id="appendix-b-b">
+<p><span class="sub-ref">(b)</span> <strong>Scope and Control.</strong> Licensor Variation(s) apply only to the files they identify and to Derivative Works of those files, and, as to them, prevail over any conflicting provision of this License. Only a Licensor may apply Licensor Variation(s), and only the Licensor that applied them may change or withdraw them; but anyone may act within a waiver they grant. Once applied, a readable copy of them must accompany each such file, and every Derivative Work of it, that anyone Conveys; for Object form, telling recipients where they can be obtained at no charge is enough, if they remain so obtainable while it is Conveyed.</p>
+</section>
+<section class="sub" id="appendix-b-c">
+<p><span class="sub-ref">(c)</span> <strong>Conflicts.</strong> A Licensor may apply several Licensor Variation(s) to a file, at once or over time, grouped into one or more sets. If Licensor Variation(s) of the same Licensor applying to the same file conflict (including an existing one and a later one), that Licensor must state which prevails. If it does not, only the conflicting Licensor Variation(s) are void as to that file; the others (including the rest of any set containing a void one) remain effective, and the provisions the void ones would have affected apply as if they had never been applied.</p>
+</section>
+<section class="sub" id="appendix-b-d">
+<p><span class="sub-ref">(d)</span> <strong>Different Licensors.</strong> Where Licensor Variation(s) of different Licensors apply to the same file, including to Section 4(f) material in it, You must comply with all of them. If You cannot, You may not Convey the file or any Derivative Work of it.</p>
+</section>
+<section class="sub" id="appendix-b-e">
+<p><span class="sub-ref">(e)</span> <strong>Copies Already Received.</strong> Licensor Variation(s), changes to or withdrawals of them, statements under subsection (c) of which one prevails, and voidness under subsection (c) affect only copies the Licensor Conveys after that event. They do not affect copies received before then, Derivative Works of those copies, or copies of either Conveyed by anyone (see also Section 1(b)(viii)).</p>
+</section>
+<section class="sub" id="appendix-b-f">
+<p><span class="sub-ref">(f)</span> <strong>How to Apply.</strong> To apply Licensor Variation(s), add them below the file's Appendix A(a) notice (or in a separate notice file as subsection (a) permits), stating each waiver, additional condition, or amendment separately and identifying the provision it affects. For example:</p>
+<pre class="notice">+------------------------------------------------------------+
+| The Licensor applies the following Licensor Variation(s),  |
+| named &quot;[name]&quot;, to this file under Appendix B of the       |
+| File-Level Permissive License:                             |
+| (1) Waiver: Section [number] does not apply to this file   |
+|     [when [describe the circumstances]].                   |
+| (2) Additional condition: Anyone who Conveys this file in  |
+|     Object form must also [describe the condition].        |
+| (3) Amendment: Section [number] applies to this file as if |
+|     it read: &quot;[replacement text]&quot;.                         |
++------------------------------------------------------------+</pre>
+<p>The words naming the set (named &quot;[name]&quot;) are optional; Section 1(c) explains how a set's name is used in this License's name and identifier. A waiver applies only to the extent stated.</p>
+</section>
+</section>
+<p class="divider">END OF TERMS AND CONDITIONS</p>
+</article>
+</main>
+</body>
+</html>

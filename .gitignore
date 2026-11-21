@@ -2,3 +2,6 @@
 node_modules/
 dist/
 src/third-party-licenses.js
+src/privacy.html
+src/eula.html
+src/flpl.html

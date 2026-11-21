@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 96" width="320" height="96" role="img" aria-labelledby="t">
+  <title id="t">FLPL: File-Level Permissive License (for dark backgrounds)</title>
+  <g transform="translate(12 12) scale(1.125)">
+    <path d="M17 5h22l13 13v37a4 4 0 0 1-4 4H17a4 4 0 0 1-4-4V9a4 4 0 0 1 4-4z" fill="#1f3440" stroke="#e8f1f2" stroke-width="3.5" stroke-linejoin="round"/>
+    <path d="M39 5v9a4 4 0 0 0 4 4h9" fill="none" stroke="#e8f1f2" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="32.5" cy="38" r="12" fill="none" stroke="#5cc4b3" stroke-width="3.5"/>
+    <rect x="27" y="37" width="11" height="8" rx="1.5" fill="#5cc4b3"/>
+    <path d="M29.5 37 V33.5 a3 3 0 0 1 6 0 V34.5" fill="none" stroke="#5cc4b3" stroke-width="2.4" stroke-linecap="round"/>
+  </g>
+  <text x="96" y="55" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="44" font-weight="800" letter-spacing="2" fill="#e8f1f2">FLPL</text>
+  <text x="97" y="78" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="14.5" font-weight="500" fill="#a9c0c6">File-Level Permissive License</text>
+</svg>

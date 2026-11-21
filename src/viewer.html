@@ -5,29 +5,58 @@
  License, v. 2.0. If a copy of the MPL was not distributed with this
  file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
- Modified by Subham Mahesh, 2026: refreshed the open-extension view and footer credits; code is shown in a CodeMirror 6 editor; Changes panel with diffs; reduced to Firefox only (removed Chrome, Opera and web-demo code, and Chrome/Edge/Opera CRX support; renamed from crxviewer.html); renamed to Zen Source Viewer.
+ Modified by Subham Mahesh, 2026: refreshed the open-extension view and footer credits; code is shown in a CodeMirror 6 editor; Changes panel with diffs; WebExtension API search and local API summaries; locale coverage with a side-by-side locale diff (locale-diff.js) and the message keys used in the code (i18n-usage.js); review report, review notes, quick open, symbols, tabs and shortcuts (review-report.js, review-notes.js, navigator.js); creating, renaming and deleting files and folders (file-ops.js); opening a local folder and applying changes to it with a temporary patch and a terminal command (local-folder.js); link to compare.html; reduced to Firefox only (removed Chrome, Opera and web-demo code; renamed from crxviewer.html); renamed to Zen Source Viewer; added a Privacy Policy link and the privacy consent gate; opens extensions for Chromium-based browsers (CRX files) again, with a download link for the original CRX file, and a Chrome, Edge or Opera store form on the open page (extension ID, platform and Chrome version); EULA link in the footer.
 
 //#expand Revision __VERSION__
  -->
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; media-src 'self' data:; connect-src https: http: data: blob:">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; media-src 'self' data:; connect-src 'self' https: http: data: blob:">
+<!-- Privacy consent gate: must stay the first script (see consent-gate.js). -->
+<script src="consent-gate.js"></script>
 <title>Zen Source Viewer</title>
 <meta name="color-scheme" content="dark light">
+<script src="theme.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" type="text/css" href="viewer.css">
 </head>
-<body>
+<body class="viewer-page is-open-view">
 <div id="top-bar">
-    <form>
-        <input type="text" id="file-filter" placeholder="filter (regex) ! file search"
+    <div class="workspace-header">
+        <a class="workspace-brand" href="viewer.html" title="Open an add-on">
+            <img src="icons/48.png" alt="">
+            <span><strong>Zen Source Viewer</strong><small>YOUR ADD-ON WORKSPACE</small></span>
+        </a>
+        <nav class="top-actions" aria-label="Workspace tools">
+        <a id="listing-link">Listing</a>
+        <button id="api-report-toggle" hidden aria-controls="api-panel" aria-expanded="false"
+            title="Detect WebExtension APIs and show local summaries"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 8-4 4 4 4m8-8 4 4-4 4m-3-11-2 14"/></svg><span>APIs</span></button>
+        <button id="locale-report-toggle" hidden aria-controls="locale-panel" aria-expanded="false"
+            title="Compare localized messages and show key coverage"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M4 12h16M12 4a16 16 0 0 1 0 16 16 16 0 0 1 0-16Z"/></svg><span>Locales</span></button>
+        <button id="review-toggle" hidden aria-pressed="false" title="Review report: permissions, code to check, network addresses and translations used in the code"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 7 3v6c0 4-7 9-7 9s-7-5-7-9V6l7-3Z"/><path d="m9 12 2 2 4-4"/></svg><span>Review</span></button>
+        <button id="notes-toggle" hidden aria-pressed="false" title="Review notes: add notes to lines of code and export them"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6Z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg><span>Notes</span></button>
+        <button id="apply-patch" hidden title="Apply a patch (.patch or .diff file, e.g. from git diff) to this add-on"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4H5v16h14V4h-3M9 3h6v4H9zM8 12h8m-4-3v6"/></svg><span>Apply patch</span></button>
+        <button id="download-edited-zip" hidden>Download edited zip</button>
+        <button id="reload-folder" hidden><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v4h-4"/></svg><span>Reload folder</span></button>
+        <button id="apply-in-terminal" hidden><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM7 9l3 3-3 3m5 0h5"/></svg><span>Apply in terminal</span></button>
+        <a id="download-link"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M4 16v4h16v-4"/></svg><span>Download</span></a>
+        <a id="download-crx-link" hidden><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M4 16v4h16v-4"/></svg><span>CRX</span></a>
+        <a id="compare-link" href="compare.html" title="Compare two versions of an add-on"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3v18m8-18v18M4 7l4-4 4 4m0 10 4 4 4-4"/></svg><span>Compare</span></a>
+        <a id="open-viewer"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v10H3V7Z"/></svg><span>Open</span></a>
+        <button id="shortcuts-button" title="Keyboard shortcuts (?)" aria-label="Keyboard shortcuts">?</button>
+        </nav>
+    </div>
+    <form class="workspace-search" aria-label="Search and filter files">
+        <input type="text" id="file-filter" placeholder="Filter files or search with !text" aria-label="Filter files or search their contents"
 title="File filter (case-insensitive). Formats:
 1. [filename filter regexp]
 2. [filename filter regexp]!file content search term (case-insensitive)
 3. [filename filter regexp]!case:file content search term (case-sensitive)
 4. [filename filter regexp]!regexp:filter content regexp (case-sensitive)
 5. [filename filter regexp]!iregexp:filter content regexp (case-insensitive)
-The filename filter is optional, '!search term' can also be used directly to search in all files.
+6. [filename filter regexp]!api:tabs.query (WebExtension API usage; browser.* and chrome.*)
+The filename filter is optional; '!search term' searches all files. API searches default to JavaScript, TypeScript and HTML files.
 " list="file-filter-patterns">
         <label title="Filter: Images">
             <input type="checkbox" data-filter-type="images">
@@ -54,58 +83,175 @@ The filename filter is optional, '!search term' can also be used directly to sea
             <span class="filter-label-description">Misc</span>
             <span class="gcount"></span>
         </label>
+        <span id="file-filter-feedback" role="status"></span>
+        <button id="quick-open-button" type="button" hidden title="Quick open a file"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg><span>Quick open</span><kbd>⌘ / Ctrl P</kbd></button>
     </form>
-    <span id="file-filter-feedback"></span>
-    <div class="top-actions">
-        <a id="listing-link">Listing</a>
-        <button id="download-edited-zip" hidden>Download edited zip</button>
-        <a id="download-link">Download</a>
-        <a id="open-viewer">Open</a>
+</div>
+<main id="advanced-open" aria-label="Open an add-on">
+    <section class="open-intro">
+        <p class="eyebrow">A little clarity, before you install</p>
+        <h1>Get to know your add-ons.</h1>
+        <p class="open-description">Explore the source, understand permissions, and see what changed. All in one quiet workspace.</p>
+        <span class="privacy-badge"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 4v3"/></svg>Local files stay on your device</span>
+    </section>
+    <div class="open-methods">
+        <form id="advanced-open-form" class="open-card">
+            <span class="eyebrow">Open source</span>
+            <h2>Bring an add-on to explore</h2>
+            <p class="open-card-description">Open a Firefox or Thunderbird add-on, a Chrome, Edge or Opera extension, or any zip archive.</p>
+            <label class="input-label" for="open-source-url">Add-on page or file URL</label>
+            <div class="url-entry">
+                <input id="open-source-url" type="url" placeholder="https://addons.mozilla.org/…" name="url">
+                <input type="submit" value="Open source">
+            </div>
+            <div class="source-or">or choose a local file</div>
+            <label class="source-drop" id="open-file-drop" tabindex="0" title="Choose an .xpi, .crx or .zip file from your computer">
+                <input type="file" accept=".xpi,.crx,.nex,.zip,.jar" hidden>
+                <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m-4 4 4-4 4 4M4 16v4h16v-4"/></svg>
+                <span class="source-drop-text"><strong>Drop your add-on or folder here, or browse</strong><small>.xpi, .crx, .zip, .jar or a folder · processed on your device</small></span>
+            </label>
+            <div class="open-folder">
+                <input type="file" id="open-folder-input" webkitdirectory multiple hidden>
+                <button type="button" id="open-folder-button" title="Open a folder of your computer, e.g. the source of your own add-on. Changes are saved back with a patch and one terminal command.">Open a folder</button>
+                <span class="open-folder-note">Work on your own add-on's source; save changes back with one terminal command.</span>
+                <p id="open-folder-status" role="status" hidden></p>
+            </div>
+            <p class="compare-hint"><a href="compare.html">Compare two versions instead &rarr;</a></p>
+        </form>
+        <div class="open-side">
+        <form id="advanced-open-amo-extension" class="site-specific-form open-card">
+            <span class="eyebrow">From the archive</span>
+            <h2>Find a published version</h2>
+            <p class="open-card-description">Look up a Firefox add-on on an add-on site you choose and explore any of its releases.</p>
+            <div title="Add-on slug (from the URL) or add-on ID (GUID or ID containing @)">
+                <label class="input-label" for="amo-slug">Add-on slug or ID</label>
+                <input id="amo-slug" type="text" pattern="[^\/]+" name="amoslugorid" placeholder="e.g. ublock-origin" required>
+                <input type="submit" value="Find versions">
+            </div>
+            <div>
+                <div class="amodescription" role="status"></div>
+                <ul class="amoxpilist"></ul>
+            </div>
+        </form>
+        <form id="advanced-open-crx-extension" class="site-specific-form open-card">
+            <span class="eyebrow">From a store</span>
+            <h2>Chrome, Edge or Opera extension</h2>
+            <p class="open-card-description">Get the current version of an extension from a store you turned on or a Chrome-style site you added, or change the platform of a Chrome Web Store download.</p>
+            <div class="crx-store-slot"></div>
+            <div class="crx-custom" hidden title="A .crx file, or a Chrome update file (update_url, usually ending in .xml), on the site chosen above.">
+                <label class="input-label" for="crx-custom-url">Address on this site</label>
+                <input id="crx-custom-url" type="url" name="customurl" placeholder="https://example.com/updates.xml" spellcheck="false" autocomplete="off">
+            </div>
+            <div class="crx-id-field" title="Chrome Web Store and Edge Add-ons: the 32-letter ID at the end of the store page address. Opera add-ons: the name in the page address. Sites you added: optional, for update servers that look up an extension by ID.">
+                <label class="input-label" for="crx-id">Extension ID or name</label>
+                <input id="crx-id" type="text" name="xid" placeholder="e.g. cjpalhdlnbpafiamejdnhcphjbkeiagm" spellcheck="false" autocomplete="off" required>
+            </div>
+            <details class="crx-platform">
+                <summary>Platform <small>(Chrome Web Store)</small></summary>
+                <p class="crx-platform-note">Some extensions have different files for each platform. The default is this device.</p>
+                <div class="crx-platform-grid">
+                    <label><span class="input-label">Operating system</span>
+                        <select name="os">
+                            <option value="win">Windows</option>
+                            <option value="mac">macOS</option>
+                            <option value="linux">Linux</option>
+                            <option value="cros">ChromeOS</option>
+                            <option value="openbsd">BSD</option>
+                            <option value="android">Android</option>
+                        </select>
+                    </label>
+                    <label><span class="input-label">Architecture</span>
+                        <select name="arch">
+                            <option value="x86-64">x86-64</option>
+                            <option value="x86-32">x86-32</option>
+                            <option value="arm64">ARM64</option>
+                            <option value="arm">ARM</option>
+                            <option value="mips64">MIPS64</option>
+                            <option value="mips">MIPS</option>
+                            <option value="riscv64">RISC-V 64</option>
+                        </select>
+                    </label>
+                    <label title="The Chrome Web Store may refuse versions that are too old."><span class="input-label">Chrome version</span>
+                        <input type="text" name="prodversion" pattern="[0-9]{1,5}(\.[0-9]{1,5}){3}" placeholder="9999.0.9999.0" spellcheck="false">
+                    </label>
+                </div>
+            </details>
+            <input type="submit" value="Open extension">
+            <p class="crx-links" hidden><a class="crx-listing-link" target="_blank" rel="noopener">Store page</a> &middot; <a class="crx-download-link">Download address</a></p>
+        </form>
+        </div>
     </div>
-</div>
-<div id="advanced-open">
-    <form id="advanced-open-form">
-        <h3>Open an add-on</h3>
-        Enter the URL of a Firefox or Thunderbird add-on (XPI), a zip file,
-        or an add-on page on addons.mozilla.org or addons.thunderbird.net.
-        <input type="url" placeholder="URL of a Firefox add-on, XPI or zip file" name="url">
-        <input type="submit" value="Open in this viewer">
-        or select a local file &rarr;
-        <input type="file" accept=".xpi,.zip,.jar">
-    </form>
-    <form id="advanced-open-amo-extension" class="site-specific-form">
-        <h3>Find XPI files of Firefox add-ons at AMO</h3>
-        <div title="Add-on slug (from the URL) or add-on ID (GUID or ID containing @)">
-            <span class="labeltext">Add-on slug or ID</span>
-            <input type="text" pattern="[^\/]+" name="amoslugorid" placeholder="slug from AMO URL or ID add-on" required>
-            <input type="submit" value="Search on AMO">
-        </div>
-        <div>
-            <div class="amodescription"></div>
-            <ul class="amoxpilist"></ul>
-        </div>
-    </form>
-</div>
+    <div class="open-capabilities" aria-label="Workspace tools">
+        <span><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 8-4 4 4 4m8-8 4 4-4 4m-3-11-2 14"/></svg>Read &amp; edit source</span>
+        <span><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 7 3v6c0 4-7 9-7 9s-7-5-7-9V6l7-3Z"/><path d="m9 12 2 2 4-4"/></svg>Review permissions</span>
+        <span><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3v18m8-18v18M4 7l4-4 4 4m0 10 4 4 4-4"/></svg>Compare versions</span>
+        <span><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M4 12h16M12 4a16 16 0 0 1 0 16 16 16 0 0 1 0-16Z"/></svg>Check translations</span>
+    </div>
+</main>
 <div id="left-panel">
     <div class="content">
+        <div id="file-tree-actions" hidden>
+            <span class="file-tree-title">Files</span>
+            <button id="new-file-button" type="button" title="Create a new file (in the folder of the selected file). Right-click the tree for more: rename, delete, new folder.">+ File</button>
+            <button id="new-folder-button" type="button" title="Create a new folder (in the folder of the selected file)">+ Folder</button>
+        </div>
+        <section id="locale-panel" hidden aria-label="Locale message coverage">
+            <div class="locale-panel-header">
+                <span class="locale-panel-title">Locale coverage</span>
+                <span class="locale-panel-count"></span>
+                <button id="locale-export-json" disabled title="Download the locale comparison as JSON">Export JSON</button>
+                <button id="locale-export-csv" disabled title="Download the locale comparison as CSV">Export CSV</button>
+                <button id="locale-rescan" title="Scan locale message files again">Rescan</button>
+                <button id="locale-panel-close" title="Close locale coverage">Close</button>
+            </div>
+            <p id="locale-panel-status" role="status">Open this panel to scan locale message files.</p>
+            <p class="locale-doc-note"><a href="https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/i18n/Locale-Specific_Message_reference" target="_blank" rel="noopener noreferrer">Mozilla locale message format</a></p>
+            <label id="locale-reference-label" class="locale-reference-label" for="locale-reference">Compare locales against</label>
+            <select id="locale-reference" hidden></select>
+            <ol id="locale-list"></ol>
+        </section>
+        <section id="api-panel" hidden aria-label="Detected WebExtension APIs">
+            <div class="api-panel-header">
+                <span class="api-panel-title">Detected APIs</span>
+                <span class="api-panel-count"></span>
+                <button id="api-rescan" title="Scan the current source files again">Rescan</button>
+                <button id="api-panel-close" title="Close API summary">Close</button>
+            </div>
+            <p id="api-panel-status" role="status">Open API summary to scan the source files.</p>
+            <ol id="api-list"></ol>
+        </section>
         <section id="changes-panel" hidden>
             <div class="changes-header">
                 <span class="changes-title">Changes</span>
                 <span class="changes-count"></span>
                 <span class="changes-total"></span>
+                <button id="changes-download-patch" title="Download your changes as a patch (git diff format)">Patch</button>
+                <button id="changes-apply-terminal" title="Save your changes as a temporary patch and get the terminal command that applies them to your folder">Terminal</button>
                 <button id="changes-download-zip" title="Download a new zip file that includes your edits">Zip</button>
                 <button id="revert-all-changes" title="Discard all edits">Revert all</button>
             </div>
             <ol id="changes-list"></ol>
         </section>
+        <section id="api-file-results" hidden tabindex="-1" aria-label="API search results">
+            <div class="api-results-actions">
+                <button id="api-results-back" type="button">&larr; APIs</button>
+                <button id="api-results-clear" type="button">Clear search</button>
+            </div>
+            <code class="api-results-path"></code>
+            <span class="api-results-count" role="status"></span>
+        </section>
         <ol id="file-list"></ol>
+        <div id="file-list-empty" hidden role="status">
+            <strong>No matching files</strong>
+            <p>Try a different search or enable more file types.</p>
+        </div>
         <div class="total-size-wrapper" hidden>
-            +
-            <span id="total-size"></span>
+            Shown files <span id="total-size"></span>
         </div>
     </div>
 </div>
 <div id="right-panel">
+    <div id="file-tabs" role="tablist" aria-label="Open files" hidden></div>
     <div id="source-toolbar"></div>
     <div id="source-code">
         <div id="initial-status"></div>
@@ -115,7 +261,9 @@ The filename filter is optional, '!search term' can also be used directly to sea
     Original work by <a href="https://robwu.nl">Rob Wu</a>
     (<a href="https://github.com/Rob--W/crxviewer">source</a>) &middot;
     Modified by Subham Mahesh &middot;
-    <a href="license.html" target="_blank">License &amp; Credits</a>
+    <a href="license.html" target="_blank">License &amp; Credits</a> &middot;
+    <a href="privacy.html" target="_blank">Privacy Policy</a> &middot;
+    <a href="eula.html" target="_blank">EULA</a>
 </footer>
 <datalist id="file-filter-patterns">
     <option value="\.js$" label="JavaScript">
@@ -124,6 +272,7 @@ The filename filter is optional, '!search term' can also be used directly to sea
     <option value="\.(js|css|html)$" label="JS / CSS / HTML">
     <option value="!browser." label="Files using the browser API">
     <option value="!regexp:(chrome|browser)\." label="Regexp file search">
+    <option value="!api:tabs.query" label="WebExtension API usage">
     <option value="\.html$!http:" label="All HTML files containing http:.">
 </datalist>
 <script src="domain-fronter.js"></script>
@@ -131,14 +280,26 @@ The filename filter is optional, '!search term' can also be used directly to sea
 <script src="lib/efficienttextwriter.js"></script>
 <script src="lib/uint8arraywriter.js"></script>
 <script src="open-addon.js"></script>
+<script src="store-domains.js"></script>
+<script src="store-notice.js"></script>
 <script src="addon-urls.js"></script>
 <script src="lib/beautify/beautify.js"></script>
 <script src="lib/strip-json-comments.js"></script>
+<script src="lib/jsdiff.js"></script>
 <script src="lib/noble-md5.js"></script>
 <script src="lib/modern-crypto.js"></script>
 <script src="lib/codemirror/zen-editor.js"></script>
 <script src="asn1lite.js"></script>
 <script src="mozcose.js"></script>
+<script src="webextension-api-catalog.js"></script>
+<script src="main-view.js"></script>
+<script src="review-report.js"></script>
+<script src="review-notes.js"></script>
+<script src="navigator.js"></script>
+<script src="file-ops.js"></script>
+<script src="local-folder.js"></script>
+<script src="i18n-usage.js"></script>
+<script src="locale-diff.js"></script>
 <script src="viewer.js"></script>
 </body>
 </html>
