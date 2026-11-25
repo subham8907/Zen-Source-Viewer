@@ -15,7 +15,9 @@
 # "LGPL-3.0-only" in Exception.txt.
 #
 # Bumps the version automatically (2.0.4 -> 2.0.5) in src/manifest.json,
-# package.json and package-lock.json, builds and lints the
+# package.json and package-lock.json, unless the current version was bumped
+# by hand and has no tag yet, in which case it releases that version; builds
+# and lints the
 # add-on, submits it to the public listing on addons.mozilla.org (AMO) with
 # web-ext together with its source code, and publishes a GitHub release.
 #
@@ -63,15 +65,20 @@ jobs:
 
       - name: Choose the next version
         run: |
-          # The last number of the current version + 1, skipping versions
-          # that already have a tag: 2.0.4 -> 2.0.5.
+          # The current version if it has no tag yet (it was bumped by
+          # hand and not released); otherwise the last number + 1,
+          # skipping versions that already have a tag: 2.0.4 -> 2.0.5.
           CURRENT=$(node -p "require('./src/manifest.json').version")
-          VERSION=$(node -e '
-            const parts = process.argv[1].split(".").map(Number);
-            while (parts.length < 3) parts.push(0);
-            parts[parts.length - 1]++;
-            console.log(parts.join("."));
-          ' "$CURRENT")
+          if git rev-parse -q --verify "refs/tags/v$CURRENT" >/dev/null; then
+            VERSION=$(node -e '
+              const parts = process.argv[1].split(".").map(Number);
+              while (parts.length < 3) parts.push(0);
+              parts[parts.length - 1]++;
+              console.log(parts.join("."));
+            ' "$CURRENT")
+          else
+            VERSION="$CURRENT"
+          fi
           while git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null; do
             VERSION=$(node -e '
               const parts = process.argv[1].split(".").map(Number);
@@ -126,7 +133,8 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add src/manifest.json package.json package-lock.json
-          git commit -m "Version $VERSION"
+          # No commit when the version was already bumped by hand.
+          git diff --cached --quiet || git commit -m "Version $VERSION"
           git tag -a "v$VERSION" -m "Zen Source Viewer $VERSION"
 
       - name: Build

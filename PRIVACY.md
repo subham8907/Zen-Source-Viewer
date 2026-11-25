@@ -6,7 +6,7 @@ Add-on ID: zen-source-viewer-official@subhammahesh
 
 **Last updated:** 25 November 2026
 
-**Applies to:** version 3.0.152 and later (policy version 7)
+**Applies to:** version 3.0.153 and later (policy version 7)
 
 **Related:** [End User License Agreement](https://github.com/subham8907/Zen-Source-Viewer/blob/main/EULA.md)
 
@@ -126,7 +126,7 @@ Changes to this policy are published in this file ([PRIVACY.md](https://github.c
 
 - **Policy version 5** (add-on versions 3.0.32–3.0.139): Choice of add-on sites, all off by default; Chrome, Edge and Opera stores and CRX files; Chrome update files; sites that work like a Chrome store; local folders in the viewer and on the Compare page, read on your device; temporary patch files in the Downloads folder, deleted again; folder paths and the list of temporary patch files kept in local storage; End User License Agreement, which ends only the rights it grants, not your rights under the open-source licenses, and the add-on can also be redistributed under those licenses alone; no warranty that patches, fixes, imports and commands the add-on prepares are correct, and you are responsible for changes you write to your own files.
 - **Policy version 6** (add-on versions 3.0.140–3.0.151): Clarified the source-license references; no change to data collection or privacy practices. From add-on version 3.0.146, the Naver Whale Store is listed as a built-in site; like every site, it is off by default and never contacted until you turn it on.
-- **Policy version 7** (add-on versions 3.0.152 and later): The End User License Agreement now states that the editing features are for editing your own add-ons and extensions, or ones whose license or owner allows you to change them; no change to data collection or privacy practices.
+- **Policy version 7** (add-on versions 3.0.153 and later): The End User License Agreement now states that the editing features are for editing your own add-ons and extensions, or ones whose license or owner allows you to change them, and that recovering the lost source code of your own add-ons and extensions is a main purpose of the add-on; no change to data collection or privacy practices.
 
 The add-on will not start collecting data without asking for your consent first.
 
