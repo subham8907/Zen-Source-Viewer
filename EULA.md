@@ -15,6 +15,7 @@ Add-on ID: zen-source-viewer-official@subhammahesh
 - **Source code:** [github.com/subham8907/Zen-Source-Viewer](https://github.com/subham8907/Zen-Source-Viewer)
 - **You may:** Install and use the add-on for any lawful purpose, personal or commercial, free of charge.
 - **Editing:** The editing features are for your own add-ons and extensions, or ones whose license or owner allows you to change them (section 5).
+- **Recovering your code:** If you have lost the source code of your own add-on or extension, you can use Zen Source Viewer to get it back from a published or packaged copy (section 5).
 - **You must not:** Violate any law, or use it for anything unlawful (section 4).
 - **Your duty:** Find out and check which laws apply to you and to how you use the add-on, before you use it (section 4).
 - **Warranty:** None: the add-on is provided "as is" (section 8).
@@ -72,7 +73,7 @@ In particular, you must not use the add-on to:
 6. violate export control or sanctions laws; or
 7. help or encourage anyone else to do any of the above.
 
-Inspecting, reviewing, comparing and auditing add-ons for security, privacy, research, education, development and translation is the purpose of the add-on and is welcome, as long as it is lawful. Its editing features are for editing your own add-ons and extensions, or ones you are allowed to change (section 5). You are solely responsible for how you use the add-on, for checking and complying with the applicable law, and for having the rights you need in the add-ons you open with it.
+Inspecting, reviewing, comparing and auditing add-ons for security, privacy, research, education, development and translation, and recovering the source code of your own add-ons and extensions if you have lost it, are the purposes of the add-on and are welcome, as long as they are lawful. Its editing features are for editing your own add-ons and extensions, or ones you are allowed to change (section 5). You are solely responsible for how you use the add-on, for checking and complying with the applicable law, and for having the rights you need in the add-ons you open with it.
 
 A breach of this section affects only the rights that this Agreement grants (section 10). It is not in itself a breach of the open-source licenses and does not affect the rights they give you directly (section 2), although you remain responsible under the law for what you do.
 
@@ -81,6 +82,8 @@ A breach of this section affects only the rights that this Agreement grants (sec
 Add-ons and extensions you open, download or edit with Zen Source Viewer belong to their authors and are subject to their own licenses. This Agreement grants you no rights in them.
 
 The editing features of Zen Source Viewer (editing files and translations, and preparing patches) are meant for editing your own add-ons and extensions, or ones whose license or owner allows you to change them. Before you edit or redistribute someone else's add-on, make sure you have the right to do so.
+
+Another main purpose of Zen Source Viewer is to help you restore your own code. If you have lost the source code of an add-on or extension you made, for example after a disk failure or a deleted repository, you can open a published or packaged copy of it (from an add-on site or store, or a package file you still have) and download its files to restore your code. A packaged copy contains only what was published in it, so it may differ from your original source code, for example if it was minified or bundled. Use this for your own add-ons and extensions, or ones whose owner allows you to recover them.
 
 Folders of your computer that you open with Zen Source Viewer stay yours. The add-on reads them on your device and never writes into them. It prepares changes as a patch file and a command, and your files change only when you run that command yourself. Keep a backup or use version control (such as Git) before you apply changes.
 
