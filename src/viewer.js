@@ -3570,7 +3570,7 @@ function initialize() {
             if (addon_url) {
                 openAddonInViewer(addon_url, zipname);
             } else {
-                var progressDiv = document.getElementById('initial-status');
+                var progressDiv = initialStatusDiv();
                 progressDiv.textContent = 'Cannot open ' + (zipname || blob_url);
                 appendFileChooser();
             }
@@ -3810,7 +3810,7 @@ function showAdvancedOpener() {
 // The list must contain at least one item.
 // |blob_url| is the (ephemeral) URL of the Blob, used if possible.
 function openEmbeddedZipFile(addon_url, inside, blob_url) {
-    var progressDiv = document.getElementById('initial-status');
+    var progressDiv = initialStatusDiv();
     progressDiv.hidden = false;
 
     var zipname = inside[inside.length - 1];
@@ -4009,7 +4009,7 @@ function setUpCrxStoreForm(urlInput, openUrl) {
 }
 
 function appendFileChooser() {
-    var progressDiv = document.getElementById('initial-status');
+    var progressDiv = initialStatusDiv();
     progressDiv.hidden = false;
     progressDiv.insertAdjacentHTML('beforeend',
             '<br><br>' +
@@ -4064,7 +4064,7 @@ function openAddonInViewer(addon_url, zipname, addon_blob) {
     setViewerLink(addon_url);
 
     if (addon_blob) {
-        var progressDiv = document.getElementById('initial-status');
+        var progressDiv = initialStatusDiv();
         openAddonAsZip(addon_blob, function(blob, crx) {
             handleBlob(zipname, blob, crx);
         }, function(error_message) {
@@ -4090,7 +4090,7 @@ function loadCachedUrlInViewer(blob_url, human_readable_name, onHasBlob, onHasNo
 }
 
 function loadBlobUrlInViewer(url, human_readable_name, onHasBlob, onHasNoBlob) {
-    var progressDiv = document.getElementById('initial-status');
+    var progressDiv = initialStatusDiv();
     progressDiv.hidden = false;
     progressDiv.textContent = 'Loading ' + human_readable_name;
 
@@ -4123,7 +4123,7 @@ function loadBlobUrlInViewer(url, human_readable_name, onHasBlob, onHasNoBlob) {
 }
 
 function loadUrlInViewer(addon_url, onHasBlob) {
-    var progressDiv = document.getElementById('initial-status');
+    var progressDiv = initialStatusDiv();
     progressDiv.hidden = false;
     progressDiv.textContent = 'Loading ' + addon_url;
 
@@ -4151,9 +4151,24 @@ function loadUrlInViewer(addon_url, onHasBlob) {
     }
 }
 
+// The loading/status box. It starts inside #source-code, which is emptied
+// when a file is shown, so it is put back when an archive or folder is opened
+// (or reloaded) after that.
+function initialStatusDiv() {
+    var div = document.getElementById('initial-status');
+    if (!div) {
+        div = document.createElement('div');
+        div.id = 'initial-status';
+        div.hidden = true;
+        var code = document.getElementById('source-code');
+        code.insertBefore(div, code.firstChild);
+    }
+    return div;
+}
+
 // |crx| is set for CRX files: {version, publicKey, extensionId, raw}.
 function handleBlob(zipname, blob, crx) {
-    var progressDiv = document.getElementById('initial-status');
+    var progressDiv = initialStatusDiv();
     progressDiv.hidden = true;
 
     crx_info = crx || null;
