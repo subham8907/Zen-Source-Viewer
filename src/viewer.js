@@ -234,6 +234,11 @@ function handleZipEntries(entries, options) {
     }
     showWorkspaceWelcome(fileCount);
     renderInitialViewFromUrlParams();
+    // A newly opened or reloaded folder or archive: an open Locales panel
+    // (and the locale comparison it shows) is scanned again at once, instead
+    // of showing the previous files until Rescan is selected.
+    var localePanel = document.getElementById('locale-panel');
+    if (localePanel && !localePanel.hidden) scanLocaleCoverage();
 }
 
 // Give the loaded archive a useful starting point before a file is selected.
