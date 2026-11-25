@@ -6,7 +6,7 @@ Add-on ID: zen-source-viewer-official@subhammahesh
 
 **Last updated:** 25 November 2026
 
-**Applies to:** version 3.0.153 and later, in Object form (the packaged add-on) (agreement version 7)
+**Applies to:** version 3.0.154 and later, in Object form (the packaged add-on) (agreement version 8)
 
 **Summary**
 
