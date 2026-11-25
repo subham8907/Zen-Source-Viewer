@@ -1,0 +1,133 @@
+Zen Source Viewer
+Copyright 2026 Subham Mahesh
+Licensed under The 21st Century Liberation License, Version 1.0, with
+Contributor Variations "LGPL-3.0-only".
+Applies to: every file listed in Exception.txt, namely this NOTICE.txt,
+Exception.txt, docs/logo/NOTICE.txt, and the files listed below under
+"Files under The 21st Century Liberation License Version 1.0".
+SPDX-License-Identifier: LicenseRef-21CLL-1.0-CV-LGPL-3.0-only OR LGPL-3.0-only
+
+This NOTICE file applies only to the files listed in Exception.txt, which
+were written entirely by Subham Mahesh, the sole owner of their copyright.
+They are licensed under The 21st Century Liberation License Version 1.0
+with Contributor Variations "LGPL-3.0-only", set out in Exception.txt.
+Under those variations, each recipient may instead use them under the GNU
+Lesser General Public License, version 3 only (LGPL-3.0-only); the two are
+alternative licenses, and the recipient may choose either (Exception.txt,
+items (1) and (3)). The file list in Exception.txt sets the files to which
+those variations apply; this NOTICE is supplementary information and does
+not change the License (Section 3(c)(iii)). Where Covered Material is
+conveyed in another format or medium, its content may be given in any
+format or medium, with a statement that it is the content of this NOTICE
+file, as Section 3(c)(ii) allows. A copy of the License is in
+LICENSE.txt; the variations and LGPL-3.0-only license text are in
+Exception.txt and LGPL-3.0.txt. GPL-3.0.txt contains only the GPLv3 terms
+incorporated by LGPLv3 and is not a separate license option.
+
+Files under The 21st Century Liberation License Version 1.0
+-----------------------------------------------------------
+
+Files that carry the License notice in their header:
+
+  .github/workflows/release-build.yml
+  external/bundles.js
+  external/codemirror/zen-editor.js
+  external/js-beautify/beautifier.js
+  external/jsdiff/linediff.js
+  external/jsdiff/patch.js
+  external/licenses/license-html.js
+  external/licenses/generate.js
+  external/md5/noble-md5.js
+  external/privacy/generate.js
+  external/privacy/template.html
+  external/strip-json-comments/strip-json-comments.js
+  external/zipjs/zip-compat.js
+  src/compare.html
+  src/compare.js
+  src/consent-gate.js
+  src/consent-state.js
+  src/consent.html
+  src/consent.js
+  src/file-ops.js
+  src/i18n-usage.js
+  src/license.html
+  src/license.js
+  src/local-folder.js
+  src/locale-diff.js
+  src/main-view.js
+  src/navigator.js
+  src/patch-worker.js
+  src/privacy.js
+  src/review-notes.js
+  src/review-report.js
+  src/store-domains.js
+  src/store-notice.js
+  src/theme.js
+  src/webextension-api-catalog.js
+  src/icons/icon.svg
+  src/icons/icon-small.svg
+  src/icons/icon-medium.svg
+
+Files that do not carry a header, covered by this NOTICE:
+
+  PRIVACY.md
+  EULA.md
+  src/privacy-policy.json
+  docs/USER_GUIDE.md
+  docs/images/*.png
+  src/icons/16.png, 19.png, 32.png, 38.png, 48.png, 128.png
+  firefox-stuff/icon64.png
+  docs/logo/license-mark.svg, license-mark.png, license-logo.svg,
+    license-logo.png, license-logo-dark.svg, license-logo-dark.png (also
+    identified, with the full notice, in docs/logo/NOTICE.txt)
+
+Files generated at build time from the files above (such as privacy.html,
+eula.html and EULA.txt), and the copies of the logo images in the packaged
+add-on (images/license-logo.png and images/license-logo-dark.png), are Object
+form of those files.
+
+Object form (the packaged add-on)
+---------------------------------
+
+  This product includes files licensed under The 21st Century
+  Liberation License, Version 1.0, with Contributor Variations
+  "LGPL-3.0-only". Copies of the License, the variations, and the LGPLv3
+  license text are included with this product. The LGPLv3's incorporated
+  GPLv3 base text is included as GPL-3.0.txt and is not a separate license
+  option.
+
+In the packaged add-on, the License is in
+LICENSE-21ST-CENTURY-LIBERATION.txt (LICENSE.txt there is the Mozilla
+Public License 2.0). It is also shown in full on the add-on's License & Credits
+page and on 21st-century-liberation-license.html. The variation is in
+Exception.txt; the elected LGPLv3 text is in LGPL-3.0.txt, and its incorporated
+GPLv3 base text is in GPL-3.0.txt. A reference in a file notice to "the
+LICENSE.txt file accompanying this work" is, in the packaged add-on, a
+reference to LICENSE-21ST-CENTURY-LIBERATION.txt. The Contributor Variation
+set "LGPL-3.0-only" applies to all Covered Material in every file listed in
+Exception.txt. No other Contributor Variations under Section 9 apply, and
+no description under Section 7(i)(B) is needed.
+
+End User License Agreement
+--------------------------
+
+The packaged add-on (Object form) is also offered under the End User License
+Agreement in EULA.md (EULA.txt in the package). For Covered Material under
+this License, the Agreement is a sublicense governed by Section 3(f). It
+applies to the Object form only and does not limit or alter recipients' rights
+in the Source form, which is
+available at https://github.com/subham8907/Zen-Source-Viewer
+
+Other files in this distribution
+--------------------------------
+
+This NOTICE does not apply to any other file. In particular:
+
+- The original work, "Extension source viewer" (CRX Viewer),
+  Copyright 2013-2026 Rob Wu <rob@robwu.nl> and its contributors, and every
+  file of it modified by Subham Mahesh, remain under the Mozilla Public
+  License, Version 2.0. See the LICENSE file and the header of each file.
+
+- Third-party libraries bundled in src/lib/ remain under their own licenses,
+  listed with their full texts on the add-on's License & Credits page
+  (generated by external/licenses/generate.js).

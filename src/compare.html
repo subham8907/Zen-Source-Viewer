@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<!--
+ Copyright 2026 Subham Mahesh
+ SPDX-License-Identifier: LicenseRef-21CLL-1.0-CV-LGPL-3.0-only OR LGPL-3.0-only
+
+ Licensed under The 21st Century Liberation License, Version 1.0
+ (the "License"). You may copy and distribute this file, with or
+ without changes, only in compliance with the License. You may obtain
+ a copy of the License in the LICENSE.txt file accompanying this work.
+
+ Unless required by applicable law or agreed to in writing, this file
+ is distributed under the License on an "AS IS" BASIS, WITHOUT
+ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See
+ the License for the specific language governing permissions and
+ limitations under the License.
+ This file is also subject to the Contributor Variation set named
+ "LGPL-3.0-only" in Exception.txt.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; connect-src 'self' https: http: data: blob:">
+<!-- Privacy consent gate: must stay the first script (see consent-gate.js). -->
+<script src="consent-gate.js"></script>
+<meta name="color-scheme" content="dark light">
+<script src="theme.js"></script>
+<meta name="viewport" content="width=device-width">
+<title>Compare versions · Zen Source Viewer</title>
+<link rel="stylesheet" type="text/css" href="viewer.css">
+</head>
+<body class="compare-page">
+<header class="compare-header">
+    <div class="compare-title">
+        <img src="icons/48.png" alt="">
+        <div>
+            <h1>Compare versions</h1>
+            <p id="compare-subtitle">See what changed between two versions of an add-on.</p>
+        </div>
+    </div>
+    <div class="compare-header-actions">
+        <button id="swap-sources" type="button" title="Swap the old and new version">Swap</button>
+        <button id="download-patch" type="button" hidden title="Download all differences as a patch (git diff format), to apply with git apply or in the viewer">Download patch</button>
+        <button id="edit-sources" type="button" hidden title="Choose other files to compare">Change files</button>
+        <a id="open-viewer-link" href="viewer.html" title="Open the add-on viewer">Viewer</a>
+    </div>
+</header>
+
+<main id="compare-setup">
+    <div class="compare-intro">
+        <span class="eyebrow">Version comparison</span>
+        <h2>Every change, in perspective.</h2>
+        <p>Choose two archives to review code changes, permissions, and translations side by side.</p>
+    </div>
+    <div class="source-cards">
+        <section class="source-card" data-side="old">
+            <span class="source-step">01 / Old version</span>
+            <h2>The starting point</h2>
+            <p class="source-description">The earlier release you want to compare against.</p>
+            <label class="input-label" for="old-source-url">Add-on page or file URL</label>
+            <form class="source-url-form">
+                <input id="old-source-url" type="url" name="url" placeholder="Add-on page, XPI, CRX or zip URL" required>
+                <button type="submit">Fetch</button>
+            </form>
+            <div class="source-or">or</div>
+            <label class="source-drop" tabindex="0">
+                <input type="file" accept=".xpi,.crx,.nex,.zip,.jar" hidden>
+                <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m-4 4 4-4 4 4M4 16v4h16v-4"/></svg><span class="source-drop-text">Drop an archive or folder, or browse <small>.xpi, .crx, .zip, .jar or a folder</small></span>
+            </label>
+            <div class="source-folder">
+                <input class="source-folder-input" type="file" webkitdirectory multiple hidden>
+                <button type="button" class="source-folder-button" title="Use a folder of your computer as this version, e.g. your add-on's source before or after your changes">Choose a folder</button>
+                <span class="source-folder-note">.git and node_modules are left out</span>
+            </div>
+            <p class="source-status" role="status"></p>
+        </section>
+        <section class="source-card" data-side="new">
+            <span class="source-step">02 / New version</span>
+            <h2>The next version</h2>
+            <p class="source-description">The updated release you want to review.</p>
+            <label class="input-label" for="new-source-url">Add-on page or file URL</label>
+            <form class="source-url-form">
+                <input id="new-source-url" type="url" name="url" placeholder="Add-on page, XPI, CRX or zip URL" required>
+                <button type="submit">Fetch</button>
+            </form>
+            <div class="source-or">or</div>
+            <label class="source-drop" tabindex="0">
+                <input type="file" accept=".xpi,.crx,.nex,.zip,.jar" hidden>
+                <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m-4 4 4-4 4 4M4 16v4h16v-4"/></svg><span class="source-drop-text">Drop an archive or folder, or browse <small>.xpi, .crx, .zip, .jar or a folder</small></span>
+            </label>
+            <div class="source-folder">
+                <input class="source-folder-input" type="file" webkitdirectory multiple hidden>
+                <button type="button" class="source-folder-button" title="Use a folder of your computer as this version, e.g. your add-on's source before or after your changes">Choose a folder</button>
+                <span class="source-folder-note">.git and node_modules are left out</span>
+            </div>
+            <p class="source-status" role="status"></p>
+        </section>
+    </div>
+
+    <section class="source-card amo-versions">
+        <span class="source-step">Or find published releases</span>
+        <h2>Choose from the version history</h2>
+        <p class="source-description">Find a Firefox add-on on an add-on site you choose and pick its old and new releases. The Chrome, Edge and Opera stores only offer the current version: paste its store page above, and use a saved .crx file for the other version.</p>
+        <label class="input-label" for="compare-amo-slug">Add-on page, slug or ID</label>
+        <form id="amo-versions-form">
+            <input id="compare-amo-slug" type="text" name="slug" placeholder="Add-on page URL, slug or ID (e.g. ublock-origin)" required>
+            <button type="submit">Find versions</button>
+        </form>
+        <p id="amo-versions-status" class="source-status" role="status"></p>
+        <ol id="amo-versions-list"></ol>
+        <button id="amo-versions-more" type="button" hidden>Show more versions</button>
+    </section>
+
+    <div class="compare-actions">
+        <button id="compare-button" class="primary" type="button" disabled>Compare versions &rarr;</button>
+        <p class="compare-privacy">Files you upload stay on your computer. Fetching a URL downloads it from that website.</p>
+    </div>
+</main>
+
+<main id="compare-results" hidden>
+    <aside class="compare-sidebar">
+        <div class="compare-summary" id="compare-summary"></div>
+        <div class="compare-filter">
+            <input type="search" id="compare-filter" aria-label="Filter changed files" placeholder="Filter files">
+            <label><input type="checkbox" id="show-unchanged"> Unchanged</label>
+        </div>
+        <ol id="compare-file-list"></ol>
+    </aside>
+    <section class="compare-diff">
+        <div class="compare-diff-toolbar">
+            <span class="compare-diff-path" id="diff-path">Choose a file</span>
+            <span class="toolbar-spacer"></span>
+            <button class="change-prev" aria-label="Previous change" type="button" title="Previous change">&#8593;</button>
+            <button class="change-next" aria-label="Next change" type="button" title="Next change">&#8595;</button>
+            <button id="toggle-beautify" type="button" title="Format both versions before comparing (useful for minified code)">Beautify</button>
+            <button id="toggle-wrap" type="button" title="Wrap long lines">Wrap</button>
+            <span class="diff-switch" role="group" aria-label="Diff layout">
+                <button data-mode="split" type="button" title="Old and new side by side">Split</button>
+                <button data-mode="unified" type="button" title="Changes inline">Unified</button>
+            </span>
+        </div>
+        <div class="compare-diff-body" id="diff-body">
+            <p class="compare-empty">Select a file to see what changed.</p>
+        </div>
+    </section>
+</main>
+
+<script src="domain-fronter.js"></script>
+<script src="lib/zip.js/zip.js"></script>
+<script src="lib/efficienttextwriter.js"></script>
+<script src="lib/uint8arraywriter.js"></script>
+<script src="open-addon.js"></script>
+<script src="store-domains.js"></script>
+<script src="store-notice.js"></script>
+<script src="addon-urls.js"></script>
+<script src="lib/beautify/beautify.js"></script>
+<script src="lib/jsdiff.js"></script>
+<script src="lib/strip-json-comments.js"></script>
+<script src="review-report.js"></script>
+<script src="lib/codemirror/zen-editor.js"></script>
+<script src="local-folder.js"></script>
+<script src="compare.js"></script>
+</body>
+</html>

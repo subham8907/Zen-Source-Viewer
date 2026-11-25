@@ -1,41 +1,29 @@
 <!DOCTYPE html>
 <!--
- (c) 2026 Subham Mahesh
- This Source Code Form is subject to the terms of the Mozilla Public
- License, v. 2.0. If a copy of the MPL was not distributed with this
- file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ Copyright 2026 Subham Mahesh
+ SPDX-License-Identifier: LicenseRef-21CLL-1.0-CV-LGPL-3.0-only OR LGPL-3.0-only
+
+ Licensed under The 21st Century Liberation License Version 1.0
+ (the "License"). You may copy and distribute this file, with or
+ without changes, only in compliance with the License. You may obtain
+ a copy of the License in the LICENSE.txt file accompanying this work.
+
+ Unless required by applicable law or agreed to in writing, this file
+ is distributed under the License on an "AS IS" BASIS, WITHOUT
+ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See
+ the License for the specific language governing permissions and
+ limitations under the License.
+ This file is also subject to the Contributor Variation set named
+ "LGPL-3.0-only" in Exception.txt.
 -->
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="color-scheme" content="light dark">
+<meta name="color-scheme" content="dark light">
+<script src="theme.js"></script>
 <meta name="viewport" content="width=device-width">
 <title>License &amp; Credits</title>
 <style>
-:root {
-    --bg: #f4f2ed;
-    --surface: #faf9f6;
-    --border: #e3dfd5;
-    --text: #2f2d29;
-    --text-muted: #6f6a60;
-    --text-subtle: #a19b8f;
-    --accent: #5b7360;
-    --accent-soft: #e5eae1;
-    color-scheme: light;
-}
-@media (prefers-color-scheme: dark) {
-    :root {
-        --bg: #161614;
-        --surface: #1c1c19;
-        --border: #2d2c28;
-        --text: #e2ded4;
-        --text-muted: #a8a397;
-        --text-subtle: #78746b;
-        --accent: #9db5a1;
-        --accent-soft: rgba(157, 181, 161, 0.13);
-        color-scheme: dark;
-    }
-}
 * {box-sizing: border-box;}
 html, body {background: var(--bg); color: var(--text);}
 body {
@@ -106,6 +94,15 @@ blockquote {
     border-radius: 10px;
 }
 .links {display: flex; flex-wrap: wrap; gap: 8px 20px;}
+.license-logo {margin: 16px 0 4px;}
+.license-logo img {display: block; width: 240px; max-width: 100%; height: auto;}
+.license-logo .logo-dark {display: none;}
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme=light]) .license-logo .logo-light {display: none;}
+    :root:not([data-theme=light]) .license-logo .logo-dark {display: block;}
+}
+:root[data-theme=dark] .license-logo .logo-light {display: none;}
+:root[data-theme=dark] .license-logo .logo-dark {display: block;}
 footer {font-size: 12px; color: var(--text-subtle); text-align: center;}
 .person .detail + .detail {margin-top: 2px;}
 details.license-text {
@@ -159,8 +156,9 @@ details.license-text pre {
 .component .notice {margin-top: 6px; font-size: 12.5px; color: var(--text-muted); font-style: italic;}
 .component details.license-text {margin: 8px 0 0;}
 </style>
+<link rel="stylesheet" href="theme.css">
 </head>
-<body>
+<body class="document-page">
 <main>
 <header class="page-header">
     <img src="icons/48.png" alt="">
@@ -186,6 +184,7 @@ details.license-text pre {
         <span class="role">Modifications</span>
         <span class="name">Subham Mahesh</span>
         <span class="detail">Zen Source Viewer &mdash; &copy; 2026 Subham Mahesh</span>
+        <span class="detail"><a href="https://github.com/subham8907/Zen-Source-Viewer" target="_blank">Source code</a></span>
     </div>
 </div>
 
@@ -194,28 +193,92 @@ details.license-text pre {
     <p>This is a modified version of the original work. Changes made by Subham Mahesh:</p>
     <ul>
         <li>Redesigned the user interface (viewer, popup and options page) with a calm, minimal look in light and dark mode.</li>
-        <li>Reduced the project to Firefox only; Chrome, Opera and online-demo builds were removed, as was support for Chrome, Edge and Opera extensions (CRX files and their stores).</li>
+        <li>Reduced the project to Firefox only; Chrome, Opera and online-demo builds were removed.</li>
+        <li>An End User License Agreement for the packaged add-on, which does not limit the rights in the source code under the MPL-2.0 and the 21st-Century-Liberation-License-1.0.</li>
+        <li>Extensions for Chrome, Edge, Opera and other Chromium-based browsers (CRX2 and CRX3 files) can be opened, also from the Chrome Web Store, Microsoft Edge Add-ons and Opera add-ons. Like every add-on site, these stores are off until you turn them on. The extension ID and public key are found with the Web Crypto API.</li>
         <li>Added this License &amp; Credits page, with the licenses of all included open-source components.</li>
         <li>The viewer shows files as a collapsible folder tree, like a file explorer.</li>
         <li>Code is shown in a CodeMirror 6 editor (editing, search and replace, code folding, autocompletion, JSON checking); edited files can be downloaded alone or as a new zip.</li>
         <li>A Changes panel lists edited files with added/removed line counts, shows each file's diff (inline or side by side) and can revert a single change, a whole file or everything.</li>
         <li>All third-party libraries are installed from npm and bundled at build time: zip.js 2, js-beautify, strip-json-comments (instead of JSON.minify) and @noble/hashes (instead of SparkMD5).</li>
+        <li>Compare two versions of an add-on: fetch each version from a URL or addons.mozilla.org, or upload a file, and see every changed file as a diff.</li>
+        <li>Patches like git: download edits or the differences between two versions as a .patch file, and apply .patch/.diff files to an add-on, including binary files (using jsdiff and fflate).</li>
         <li>New name (Zen Source Viewer), add-on ID and icon.</li>
     </ul>
     <p style="margin-top: 12px">Each modified source file carries a notice saying it was modified by Subham Mahesh.</p>
 </div>
 
+<h2 class="section-title">Privacy</h2>
+<div class="card">
+    <p>Zen Source Viewer does not collect, store or share any personal data, and has no analytics or tracking.
+    It only connects to a website when you ask it to fetch an add-on or file, and only add-on sites you turned on;
+    that website's own privacy policy applies.</p>
+    <div class="links">
+        <a href="privacy.html" target="_blank">Read the full privacy policy</a>
+    </div>
+</div>
+
+<h2 class="section-title">End User License Agreement</h2>
+<div class="card" id="eula">
+    <p>The packaged add-on (Object form) is also offered under an <strong>End User License Agreement</strong>:
+    you may use it for any lawful purpose, personal or commercial, free of charge. You must not violate any law, you
+    must check which laws apply to you and to your use before using it, and you must not use it for anything
+    unlawful, such as infringing others' rights in the add-ons you open, breaking the terms of add-on sites, or
+    making malware. It comes without warranty.</p>
+    <p>The agreement <strong>does not limit or alter your rights in the source code</strong>. The MPL-2.0 lets the
+    Object form be offered under separate terms only on that condition (section 3.2); under the 21st-Century-Liberation-License-1.0
+    (section 4(e)), such terms are always a sublicense that remains governed by this License and does not affect copies
+    received other than under it.
+    The complete source code is available, and you may use, modify and distribute it under
+    those licenses whether or not you accept the agreement.</p>
+    <div class="links">
+        <a href="eula.html" target="_blank">Read the End User License Agreement</a>
+        <a href="EULA.txt" target="_blank">EULA.txt (bundled)</a>
+        <a href="https://github.com/subham8907/Zen-Source-Viewer" target="_blank">Source code</a>
+        <a href="https://github.com/subham8907/Zen-Source-Viewer/releases" target="_blank">Source code of each release</a>
+    </div>
+</div>
+
 <h2 class="section-title">License of Zen Source Viewer</h2>
 <div class="card">
-    <p>The original work and these modifications are distributed under the
-    <strong>Mozilla Public License, version 2.0</strong> (MPL-2.0).</p>
+    <p>Zen Source Viewer is made of files under two licenses. The license of each
+    source file is stated at the top of that file.</p>
+    <p><strong>Mozilla Public License, version 2.0</strong> (MPL-2.0): the original work
+    by Rob Wu and its contributors, and every file of it that Subham Mahesh modified
+    (these carry a &ldquo;Modified by Subham Mahesh&rdquo; notice).</p>
     <blockquote>This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.</blockquote>
     <details class="license-text" id="project-license">
-        <summary>Show the full license text</summary>
+        <summary>Show the full MPL-2.0 text</summary>
+        <pre></pre>
+    </details>
+    <div class="license-logo">
+        <img class="logo-light" src="images/license-logo.png" alt="The 21st Century Liberation License" width="240" height="72">
+        <img class="logo-dark" src="images/license-logo-dark.png" alt="The 21st Century Liberation License" width="240" height="72">
+    </div>
+    <p><strong>The 21st Century Liberation License Version 1.0</strong> (21st-Century-Liberation-License-1.0):
+    files written entirely by Subham Mahesh, who solely owns their copyright, such as the
+    compare page, review report and notes, locale diff, quick open, file operations,
+    the privacy consent pages and the icons. These files are also subject to the
+    Contributor Variation set "LGPL-3.0-only" in Exception.txt, which also grants rights under LGPL-3.0-only. LGPLv3 incorporates GPLv3 as its base terms.</p>
+    <blockquote>Copyright 2026 Subham Mahesh. Licensed under The 21st Century Liberation License Version 1.0 with Contributor Variations "LGPL-3.0-only"; see Exception.txt.</blockquote>
+    <p>Object-form statement (Appendix A(b) of this License):</p>
+    <blockquote id="license-object-statement">This product includes files licensed under The 21st Century Liberation License, Version 1.0, with Contributor Variations "LGPL-3.0-only". Copies of the License, the variations, and the LGPLv3 text are included with this product. Its incorporated GPLv3 base text is included as GPL-3.0.txt and is not a separate license option.</blockquote>
+    <p>In this add-on the License is in LICENSE-21ST-CENTURY-LIBERATION.txt and below; LICENSE.txt is the MPL-2.0. Where a file notice
+    refers to &ldquo;the LICENSE.txt file accompanying this work&rdquo;, in the packaged add-on that means LICENSE-21ST-CENTURY-LIBERATION.txt.</p>
+    <details class="license-text" id="license-document">
+        <summary>Show the full The 21st Century Liberation License Version 1.0 text</summary>
         <pre></pre>
     </details>
     <div class="links">
-        <a href="LICENSE.txt" target="_blank">LICENSE.txt (bundled)</a>
+        <a href="21st-century-liberation-license.html" target="_blank">Read The 21st Century Liberation License</a>
+        <a href="LICENSE.txt" target="_blank">LICENSE.txt (MPL-2.0, bundled)</a>
+        <a href="LICENSE-21ST-CENTURY-LIBERATION.txt" target="_blank">LICENSE-21ST-CENTURY-LIBERATION.txt (21st-Century-Liberation-License-1.0, bundled)</a>
+        <a href="Exception.txt" target="_blank">Exception.txt (Contributor Variation)</a>
+        <a href="LGPL-3.0.txt" target="_blank">LGPL-3.0.txt</a>
+        <a href="GPL-3.0.txt" target="_blank">GPL-3.0.txt (incorporated by LGPL-3.0-only)</a>
+        <a href="NOTICE.txt" target="_blank">NOTICE.txt (covered files)</a>
+        <a href="images/NOTICE.txt" target="_blank">Logo NOTICE (license logo images)</a>
+        <a href="https://github.com/subham8907/Zen-Source-Viewer" target="_blank">Source code on GitHub</a>
         <a href="https://mozilla.org/MPL/2.0/" target="_blank">MPL 2.0 on mozilla.org</a>
     </div>
 </div>

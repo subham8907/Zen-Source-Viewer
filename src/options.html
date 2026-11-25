@@ -5,51 +5,20 @@
  License, v. 2.0. If a copy of the MPL was not distributed with this
  file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
- Modified by Subham Mahesh, 2026: redesigned the user interface; reduced to Firefox only (removed Chrome, Opera and web-demo code); added a License & Credits link; renamed to Zen Source Viewer; removed CRX support.
+ Modified by Subham Mahesh, 2026: redesigned the user interface; reduced to Firefox only (removed Chrome, Opera and web-demo code); added a License & Credits link; renamed to Zen Source Viewer; removed CRX support; removed the address bar button setting (replaced by a toolbar button); added a Privacy section to withdraw privacy consent, a Privacy Policy link and the privacy consent gate; Add-on sites lists the Chrome, Edge and Opera stores (CRX support is back), and sites you add can work like a Chrome store; the right-click menu settings and the add-on site list are one section, where link patterns are added like sites; links to the End User License Agreement and the source code.
 -->
-<html>
+<html lang="en">
 <head>
 <!-- Only for optionsV2 pages -->
 <base target="_blank">
 <meta charset="utf-8">
+<!-- Privacy consent gate: must stay the first script (see consent-gate.js). -->
+<script src="consent-gate.js"></script>
 <meta name="color-scheme" content="dark light">
+<script src="theme.js"></script>
 <meta name="viewport" content="width=device-width">
 <title>Zen Source Viewer settings</title>
 <style>
-:root {
-    --bg: #f4f2ed;
-    --surface: #faf9f6;
-    --surface-hover: #f1eee7;
-    --border: #e3dfd5;
-    --border-strong: #d3cec2;
-    --text: #2f2d29;
-    --text-muted: #6f6a60;
-    --text-subtle: #a19b8f;
-    --accent: #5b7360;
-    --accent-soft: #e5eae1;
-    --focus-ring: rgba(91, 115, 96, 0.28);
-    --danger: #b4533f;
-    --switch-off: #d3cec2;
-    color-scheme: light;
-}
-@media (prefers-color-scheme: dark) {
-    :root {
-        --bg: #161614;
-        --surface: #1c1c19;
-        --surface-hover: #23231f;
-        --border: #2d2c28;
-        --border-strong: #3a3934;
-        --text: #e2ded4;
-        --text-muted: #a8a397;
-        --text-subtle: #78746b;
-        --accent: #9db5a1;
-        --accent-soft: rgba(157, 181, 161, 0.13);
-        --focus-ring: rgba(157, 181, 161, 0.3);
-        --danger: #d98b78;
-        --switch-off: #3f3e38;
-        color-scheme: dark;
-    }
-}
 * {box-sizing: border-box;}
 /* Explicit background also works around Firefox before 127 - bugzil.la/1888866 */
 html, body {
@@ -94,6 +63,17 @@ a:hover {text-decoration: underline;}
     border: 1px solid var(--accent);
     border-radius: 999px;
 }
+.page-header .open-viewer.secondary {
+    margin-left: 0;
+    color: var(--text-muted);
+    border-color: var(--border-strong);
+}
+.page-header .open-viewer:not(.secondary) {
+    margin-left: 0;
+}
+.page-header .open-viewer:first-of-type {
+    margin-left: auto;
+}
 .page-header .open-viewer:hover {text-decoration: none; color: var(--bg); background: var(--accent);}
 .section-title {
     margin: 0 0 12px 4px;
@@ -118,7 +98,7 @@ a:hover {text-decoration: underline;}
     padding: 20px 22px;
     cursor: pointer;
 }
-.setting + .setting, .sub-setting + .setting {
+.setting + .setting {
     border-top: 1px solid var(--border);
 }
 .setting:hover {background: var(--surface-hover);}
@@ -158,38 +138,81 @@ a:hover {text-decoration: underline;}
     outline: none;
     box-shadow: 0 0 0 3px var(--focus-ring);
 }
-.sub-setting {
-    display: block;
-    padding: 0 22px 22px;
+.store-intro {padding: 20px 22px 0; cursor: default;}
+.store-notice {
+    margin: 12px 22px 4px;
+    padding: 10px 12px;
+    font-size: 12.5px;
+    color: var(--text-muted);
+    background: var(--accent-soft);
+    border-radius: 10px;
 }
-.sub-setting .setting-desc {margin-bottom: 8px;}
-#contextmenuPatterns {
-    display: block;
-    width: 100%;
-    min-height: 5em;
-    padding: 8px 10px;
-    font: 12.5px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+.store-group {
+    margin: 0;
+    padding: 16px 22px 6px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-subtle);
+}
+.store-host {font: 12.5px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--text-muted);}
+.store-empty {padding: 0 22px 12px; font-size: 13px; color: var(--text-muted);}
+.store-remove {order: 3;}
+.store-removed-head {display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 22px 6px;}
+.store-removed-head .store-reset {padding: 4px 12px; font-size: 12.5px;}
+#store-removed-list .setting:first-child {border-top: 1px solid var(--border);}
+.store-removed-row {cursor: default;}
+.store-removed-row:hover {background: none;}
+.store-removed-row .setting-title {color: var(--text-muted);}
+.store-restore {flex: none; order: 3; align-self: center;}
+.store-pattern-icon {flex: none; width: 38px; margin-top: 2px; font-size: 11px; font-weight: 600; text-align: center; color: var(--text-subtle);}
+#store-sites.menu-off .store-pattern-row {opacity: 0.55;}
+#contextmenu-setting {border-bottom: 1px solid var(--border);}
+.store-add {display: flex; flex-wrap: wrap; gap: 8px; padding: 16px 22px 6px; border-top: 1px solid var(--border);}
+.store-add input, .store-add select {
+    padding: 7px 10px;
+    font: inherit;
+    font-size: 13px;
     color: var(--text);
     background: var(--bg);
     border: 1px solid var(--border-strong);
     border-radius: 10px;
-    resize: vertical;
 }
-#contextmenuPatterns:focus {
-    outline: none;
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--focus-ring);
+.store-add input {flex: 1; min-width: 200px;}
+.store-add input:focus, .store-add select:focus {outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--focus-ring);}
+.store-add button, .store-reset {
+    padding: 7px 14px;
+    font: inherit;
+    font-size: 13px;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    cursor: pointer;
 }
-#contextmenuPatterns:disabled {opacity: 0.5;}
-#contextmenuPatternsOutput {
-    display: block;
-    margin-top: 6px;
-    font-size: 12.5px;
-    color: var(--text-muted);
-    white-space: pre-wrap;
-    word-break: break-all;
+.store-add button:hover, .store-reset:hover {background: var(--surface-hover);}
+.store-add button:focus-visible, .store-reset:focus-visible {outline: none; box-shadow: 0 0 0 3px var(--focus-ring);}
+#store-status {display: block; padding: 4px 22px 0; font-size: 12.5px; color: var(--text-muted);}
+#store-status:empty {display: none;}
+#store-status.error {color: var(--danger);}
+.store-footer {padding: 12px 22px 20px;}
+.privacy-setting {cursor: default;}
+.privacy-setting:hover {background: none;}
+.withdraw-button {
+    flex: none;
+    order: 2;
+    padding: 6px 14px;
+    font: inherit;
+    font-size: 13px;
+    color: var(--danger);
+    background: transparent;
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    cursor: pointer;
 }
-#contextmenuPatternsOutput:empty {display: none;}
+.withdraw-button:hover {border-color: var(--danger);}
+.withdraw-button:focus-visible {outline: none; box-shadow: 0 0 0 3px var(--focus-ring);}
 footer {
     padding: 8px 0 0;
     font-size: 12px;
@@ -206,50 +229,97 @@ footer nav {
 footer a {color: var(--text-muted);}
 footer a:hover {color: var(--accent);}
 </style>
+<link rel="stylesheet" href="theme.css">
 </head>
-<body>
+<body class="document-page settings-page">
 <main>
 <header class="page-header">
     <img src="icons/48.png" alt="">
     <div>
-        <h1>Zen Source Viewer</h1>
-        <p>Settings</p>
+        <h1>Settings</h1>
+        <p>Zen Source Viewer</p>
     </div>
+    <a class="open-viewer secondary" href="compare.html" title="Compare two versions of an add-on">Compare versions</a>
     <a class="open-viewer" href="viewer.html" title="Select an XPI or ZIP file to view its contents">Open Viewer</a>
 </header>
+<p class="settings-intro">Choose how you open add-ons and manage your privacy preferences.</p>
 
-<h2 class="section-title">Access</h2>
+<h2 class="section-title">Appearance</h2>
 <div class="card">
-    <label class="setting" id="pageaction-wrapper">
-        <input type="checkbox" id="pageaction">
+    <div class="setting appearance-setting">
         <span class="setting-text">
-            <span class="setting-title">Show address bar button</span>
-            <span class="setting-desc">Show a page action button in the location bar of extension installation pages.</span>
+            <span class="setting-title">Color theme</span>
+            <span class="setting-desc">One appearance for the popup, viewer, and every add-on page. System follows your device.</span>
+            <span class="theme-status" data-theme-status role="status"></span>
         </span>
-    </label>
-    <label class="setting">
+        <div class="theme-options" role="group" aria-label="Appearance">
+    <button type="button" data-theme-option="system" aria-pressed="false"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8m-4-4v4"/></svg>System</button>
+    <button type="button" data-theme-option="light" aria-pressed="false"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg>Light</button>
+    <button type="button" data-theme-option="dark" aria-pressed="false"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14a8 8 0 0 1-10-10 8 8 0 1 0 10 10Z"/></svg>Dark</button>
+</div>
+    </div>
+</div>
+
+<h2 class="section-title">Add-on sites and right-click menu</h2>
+<div class="card" id="store-sites">
+    <label class="setting" id="contextmenu-setting">
         <input type="checkbox" id="contextmenu">
         <span class="setting-text">
-            <span class="setting-title">Context menu item</span>
-            <span class="setting-desc">Add a &ldquo;View linked extension source&rdquo; menu item to links to Firefox add-ons (XPI files and add-on pages).</span>
+            <span class="setting-title">Right-click menu</span>
+            <span class="setting-desc">Show &ldquo;View linked extension source&rdquo; on links to .xpi and .crx files, on add-on pages of the sites turned on below, and on links matching the patterns you added below.</span>
         </span>
     </label>
-    <label class="sub-setting">
-        <span class="setting-desc">Also add the menu item to links matching these URL patterns (one per line):</span>
-        <textarea id="contextmenuPatterns" spellcheck="false" placeholder="https://example.com/*.xpi"></textarea>
-        <span id="contextmenuPatternsOutput"></span>
-    </label>
+    <div class="store-intro">
+        <span class="setting-title">Sites this add-on may contact</span>
+        <span class="setting-desc">Every site is off until you turn it on. Zen Source Viewer only connects to a site that is turned on, and only when you open an add-on from it. A site that is off is never contacted: its pages are not recognized and requests to it are blocked. Other addresses you paste yourself are not affected.</span>
+    </div>
+    <p class="store-notice">Zen Source Viewer is an independent project. It is not made, endorsed or sponsored by Mozilla, Thunderbird, Google, Microsoft, Opera or any other site listed here, and listing a site, including one you add, does not mean we endorse it. When you open an add-on from a site, that site receives your request, including your IP address, under its own privacy policy.</p>
+    <div id="store-builtin"></div>
+    <h3 class="store-group">Sites and links you added</h3>
+    <div id="store-custom"></div>
+    <div id="store-removed" hidden></div>
+    <form class="store-add" id="store-add-form">
+        <input type="text" id="store-add-host" placeholder="addons.example.org" spellcheck="false" autocomplete="off" aria-label="Domain of an add-on site, or a link pattern">
+        <select id="store-add-kind" aria-label="Type of site">
+            <option value="firefox">Works like addons.mozilla.org</option>
+            <option value="thunderbird">Works like addons.thunderbird.net</option>
+            <option value="crx">Works like a Chrome store (CRX files)</option>
+            <option value="pattern">Right-click menu only (link pattern)</option>
+        </select>
+        <button type="submit">Add site</button>
+    </form>
+    <span id="store-status" role="status"></span>
+    <div class="store-footer">
+        <button type="button" class="store-reset" id="store-reset">Turn off all built-in sites</button>
+    </div>
+</div>
+
+<h2 class="section-title">Privacy</h2>
+<div class="card">
+    <div class="setting privacy-setting">
+        <span class="setting-text">
+            <span class="setting-title">Privacy policy and license agreement</span>
+            <span class="setting-desc" id="consent-summary">Checking&hellip;</span>
+            <span class="setting-desc"><a href="privacy.html">Read the privacy policy</a> &middot; <a href="eula.html">Read the End User License Agreement</a></span>
+        </span>
+        <button type="button" id="withdraw-consent" class="withdraw-button">Withdraw consent</button>
+    </div>
 </div>
 
 <footer>
     &copy; 2013&ndash;2026 Rob Wu &lt;rob@robwu.nl&gt; &middot; Modifications &copy; 2026 Subham Mahesh
     <nav>
         <a href="license.html">License &amp; Credits</a>
+        <a href="privacy.html">Privacy Policy</a>
+        <a href="eula.html">End User License Agreement</a>
+        <a href="https://github.com/subham8907/Zen-Source-Viewer">Source code</a>
         <a href="https://github.com/Rob--W/crxviewer">Original source code</a>
         <a href="https://addons.mozilla.org/firefox/addon/crxviewer/">Original Firefox add-on</a>
     </nav>
 </footer>
 </main>
+<script src="consent-state.js"></script>
+<script src="store-domains.js"></script>
 <script src="options.js"></script>
 </body>
 </html>

@@ -7,20 +7,20 @@
  * Modified by Subham Mahesh, 2026: rewrote the dark theme as theme tokens
  * for the redesigned user interface; renamed from crxviewer-dark.less. */
 
-// Dark theme: only redefines the design tokens declared in viewer.less.
-// Imported inside @media (prefers-color-scheme: dark).
+// Dark palette shared by automatic and explicitly selected appearance.
+// Imported by theme.less and emitted only where this mixin is used.
 
-:root {
+.zen-dark-theme() {
     // Zen palette at night: charcoal, washi, moss.
-    --bg: #161614;
-    --surface: #1c1c19;
-    --surface-2: #23231f;
-    --surface-hover: #272723;
-    --border: #2d2c28;
-    --border-strong: #3a3934;
-    --text: #e2ded4;
-    --text-muted: #a8a397;
-    --text-subtle: #78746b;
+    --bg: #171b18;
+    --surface: #1e241f;
+    --surface-2: #272f28;
+    --surface-hover: #2d372f;
+    --border: #343e35;
+    --border-strong: #465246;
+    --text: #e2e8dc;
+    --text-muted: #a5b0a0;
+    --text-subtle: #889581;
     --accent: #9db5a1;
     --accent-hover: #b0c6b3;
     --accent-text: #161714;
@@ -34,7 +34,7 @@
     --match-stroke: #d98b78;
     --shadow-sm: none;
     --shadow-md: 0 12px 32px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
-    --code-bg: #181816;
+    --code-bg: #1a201b;
     --cm-selection: rgba(157, 181, 161, 0.22);
     --cm-selection-match: rgba(157, 181, 161, 0.12);
     --cm-active-line: rgba(226, 222, 212, 0.035);
@@ -42,12 +42,14 @@
     --diff-add: #8fbf86;
     --diff-del: #d98b78;
     --diff-mod: #d6b06a;
+    --locale-same: #8fb2d4;
+    --locale-same-bg: rgba(143, 178, 212, 0.10);
     --diff-add-bg: rgba(143, 191, 134, 0.09);
     --diff-del-bg: rgba(217, 139, 120, 0.09);
     --diff-add-text: rgba(143, 191, 134, 0.26);
     --diff-del-text: rgba(217, 139, 120, 0.26);
     // Syntax colors: soft, low-contrast inks.
-    --syn-comment: #77736a;
+    --syn-comment: #8b9984;
     --syn-keyword: #c7a0b4;
     --syn-string: #a9c08e;
     --syn-number: #d8a878;
@@ -57,5 +59,8 @@
     --syn-type: #d9c58e;
     --syn-punctuation: #8f8a80;
     --syn-meta: #a29d91;
+    --switch-off: #465246;
+    --surface-raised: #252e27;
+    --hero-glow: rgba(128, 164, 113, 0.07);
     color-scheme: dark;
 }

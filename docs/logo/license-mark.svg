@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-labelledby="t">
+  <title id="t">21st Century Liberation License mark</title>
+  <!-- A file with a folded corner, holding an open padlock, for open, permissive use. -->
+  <path d="M17 5h22l13 13v37a4 4 0 0 1-4 4H17a4 4 0 0 1-4-4V9a4 4 0 0 1 4-4z" fill="#e6f4f1" stroke="#1d3b4a" stroke-width="3.5" stroke-linejoin="round"/>
+  <path d="M39 5v9a4 4 0 0 0 4 4h9" fill="none" stroke="#1d3b4a" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="32.5" cy="38" r="12" fill="none" stroke="#1f8a7a" stroke-width="3.5"/>
+  <rect x="27" y="37" width="11" height="8" rx="1.5" fill="#1f8a7a"/>
+  <path d="M29.5 37 V33.5 a3 3 0 0 1 6 0 V34.5" fill="none" stroke="#1f8a7a" stroke-width="2.4" stroke-linecap="round"/>
+</svg>

@@ -1,5 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-  <!-- Zen Source Viewer icon. (c) 2026 Subham Mahesh. MPL-2.0. -->
+  <!-- Zen Source Viewer icon. Copyright 2026 Subham Mahesh. Licensed under The 21st Century Liberation License, Version 1.0, with Contributor Variations "LGPL-3.0-only" in Exception.txt; see LICENSE.txt. -->
+  <!-- SPDX-License-Identifier: LicenseRef-21CLL-1.0-CV-LGPL-3.0-only OR LGPL-3.0-only -->
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#6d8772"/>

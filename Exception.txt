@@ -1,0 +1,197 @@
+Copyright (C) 2026 Subham Mahesh
+
+SPDX-License-Identifier: LicenseRef-21CLL-1.0-CV-LGPL-3.0-only OR LGPL-3.0-only
+
+This Contributor Variation applies to all Covered Material in the following
+files. Exception.txt, NOTICE.txt, and docs/logo/NOTICE.txt are themselves
+included. This list defines the scope of the Variation; NOTICE.txt provides
+supplementary information only. The Variation also applies where any listed
+Covered Material is copied or adapted into a Derivative Work.
+
+  .github/workflows/release-build.yml
+  EULA.md
+  Exception.txt
+  NOTICE.txt
+  PRIVACY.md
+  docs/USER_GUIDE.md
+  docs/images/analysis.png
+  docs/images/apis.png
+  docs/images/apply-patch.png
+  docs/images/compare-permissions.png
+  docs/images/compare-results.png
+  docs/images/compare-setup.png
+  docs/images/compare-translations.png
+  docs/images/editing.png
+  docs/images/file-menu.png
+  docs/images/file-rename.png
+  docs/images/file-toolbar.png
+  docs/images/locale-diff.png
+  docs/images/locale-edit.png
+  docs/images/locale-file-diff.png
+  docs/images/note-add.png
+  docs/images/notes-view.png
+  docs/images/open-page.png
+  docs/images/options.png
+  docs/images/popup-addon.png
+  docs/images/popup-other.png
+  docs/images/quick-open.png
+  docs/images/review-code.png
+  docs/images/review.png
+  docs/images/search.png
+  docs/images/shortcuts.png
+  docs/images/symbols.png
+  docs/images/tabs.png
+  docs/images/viewer.png
+  docs/logo/NOTICE.txt
+  docs/logo/license-logo-dark.png
+  docs/logo/license-logo-dark.svg
+  docs/logo/license-logo.png
+  docs/logo/license-logo.svg
+  docs/logo/license-mark.png
+  docs/logo/license-mark.svg
+  external/bundles.js
+  external/codemirror/zen-editor.js
+  external/js-beautify/beautifier.js
+  external/jsdiff/linediff.js
+  external/jsdiff/patch.js
+  external/licenses/generate.js
+  external/licenses/license-html.js
+  external/md5/noble-md5.js
+  external/privacy/generate.js
+  external/privacy/template.html
+  external/strip-json-comments/strip-json-comments.js
+  external/zipjs/zip-compat.js
+  firefox-stuff/icon64.png
+  src/compare.html
+  src/compare.js
+  src/consent-gate.js
+  src/consent-state.js
+  src/consent.html
+  src/consent.js
+  src/file-ops.js
+  src/i18n-usage.js
+  src/license.html
+  src/license.js
+  src/local-folder.js
+  src/locale-diff.js
+  src/main-view.js
+  src/navigator.js
+  src/patch-worker.js
+  src/privacy-policy.json
+  src/privacy.js
+  src/review-notes.js
+  src/review-report.js
+  src/store-domains.js
+  src/store-notice.js
+  src/theme.js
+  src/webextension-api-catalog.js
+  src/icons/128.png
+  src/icons/16.png
+  src/icons/19.png
+  src/icons/32.png
+  src/icons/38.png
+  src/icons/48.png
+  src/icons/icon.svg
+  src/icons/icon-medium.svg
+  src/icons/icon-small.svg
+
+Licensed under The 21st Century Liberation License Version 1.0 (the
+"License"). You may copy and distribute this work, with or without
+changes, only in compliance with the License. You may obtain a copy of
+this License from the LICENSE.txt file in the source code. In the packaged
+add-on, it is provided as the
+LICENSE-21ST-CENTURY-LIBERATION.txt file.
+
+Unless required by applicable law or agreed to in writing, this file is
+distributed under the License on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+CONDITIONS OF ANY KIND, either express or implied. See the License for the
+specific language governing permissions and limitations under the License.
+
+The Contributor applies the following Contributor Variation(s), in the set
+named "LGPL-3.0-only", to the Covered Material listed above under Section 9 of
+The 21st Century Liberation License Version 1.0:
+
+For SPDX purposes, LicenseRef-21CLL-1.0-CV-LGPL-3.0-only denotes the License
+subject to item (2) below. The SPDX expression summarizes the alternative
+grants and does not replace or modify their terms.
+
+For the purposes of this Contributor Variation, "License" means The 21st
+Century Liberation License Version 1.0, without any Contributor Variations.
+
+For the purposes of this Contributor Variation, "LGPLv3" means the GNU Lesser
+General Public License, version 3, as published by the Free Software
+Foundation on 29 June 2007. "LGPL-3.0-only" means LGPLv3, including the GNU
+General Public License, version 3 ("GPLv3"), terms incorporated into LGPLv3,
+and excludes any later version of either license. The incorporated GPLv3
+terms are part of LGPL-3.0-only and are not a separate license option under
+this Contributor Variation.
+
+This Contributor Variation amends (including by adding to) or overrides
+provisions of the License, as Sections 1(a)(i) and 9(a) permit, and grants an
+Other License under Section 1(b)(vii), by the permissions and conditions
+stated below. It applies to the Covered Material it identifies, but not to
+Your changes unless this Variation expressly so requires. As to that
+material, it prevails over any conflicting provision of the License under
+Section 9(b). The License continues to apply as varied here.
+
+(1) Other License (Section 1(b)(vii)): Additional License. In addition to the
+License, the Contributor licenses the Covered Material identified by this
+Contributor Variation, and each Contributor licenses its Contributions to that
+Covered Material, under LGPL-3.0-only (the "Elected License").
+
+Because LGPLv3 consists of GPLv3 terms with additional permissions, when You
+Convey a covered work, Section 7 of the incorporated GPLv3 permits You to
+remove any of those additional permissions from that copy, or from any part of
+it, subject to that Section. If You remove those additional permissions, the
+copy remains governed by GPLv3 without them. This describes a permission of
+the Elected License and does not create a separate direct grant under this
+Contributor Variation.
+
+You may Propagate and Convey any such Covered Material and any Derivative Work
+of it under the Elected License, alone or combined with other material,
+subject to its terms and conditions. This additional license is granted
+directly by the respective Contributor and not by way of sublicense. Under
+Section 1(b)(vii), Section 2 and the conditions of the License do not apply to
+rights exercised under the Elected License.
+
+(2) Amendment (Section 3(b)): Additional Condition. When exercising rights
+under the License, You must retain this entire notice, including this
+Contributor Variation, in the Source form of every copy of the Covered
+Material identified by this Contributor Variation, and of every Derivative
+Work of that material, that You Convey. When exercising rights under the
+Elected License, retention of this notice is governed by its terms and
+conditions.
+
+(3) Choice of License. The License and the Elected License are alternative
+grants of rights (Section 1(b)(vii)). Each recipient may independently
+exercise rights under either of them, provided that the recipient complies
+with the terms and conditions applicable to the rights being exercised.
+Exercising rights under one license does not, by itself, require compliance
+with the conditions of the other. A previous recipient's choice of license
+does not, by itself, restrict a later recipient's rights under the other
+license, which is granted directly to that later recipient.
+
+(4) Version Limitation (GPLv3 Section 14 and LGPLv3 Section 6). This
+Contributor Variation grants no permission to use any later version of
+LGPLv3 or GPLv3, and designates no proxy under Section 14 of the incorporated
+GPLv3 or Section 6 of LGPLv3 to decide whether a future version of either
+license may be used.
+
+(5) Copies of License Texts. The LGPLv3 text accompanies this program as
+LGPL-3.0.txt, and the incorporated GPLv3 text as GPL-3.0.txt. If either text
+is not included, copies may be obtained from:
+
+https://www.gnu.org/licenses/lgpl-3.0.html
+https://www.gnu.org/licenses/gpl-3.0.html
+
+(6) Removal and Changes (Sections 9(b) and 9(e)). This Contributor Variation
+specifies no terms for its removal, so You may not remove it from Covered
+Material, or from any Derivative Work of it, that You Propagate or Convey
+under the License. When You exercise rights under the Elected License, its
+terms govern. The Contributor reserves no right to change or withdraw this
+Contributor Variation, including the Elected License, for material already
+received.
+
+License Identifier:
+
+21st-Century-Liberation-License-1.0-Contributor-Variations-LGPL-3.0-only

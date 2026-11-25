@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<!--
+ Copyright 2026 Subham Mahesh
+ SPDX-License-Identifier: LicenseRef-21CLL-1.0-CV-LGPL-3.0-only OR LGPL-3.0-only
+
+ Licensed under The 21st Century Liberation License, Version 1.0
+ (the "License"). You may copy and distribute this file, with or
+ without changes, only in compliance with the License. You may obtain
+ a copy of the License in the LICENSE.txt file accompanying this work.
+
+ Unless required by applicable law or agreed to in writing, this file
+ is distributed under the License on an "AS IS" BASIS, WITHOUT
+ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See
+ the License for the specific language governing permissions and
+ limitations under the License.
+ This file is also subject to the Contributor Variation set named
+ "LGPL-3.0-only" in Exception.txt.
+
+ Privacy consent page. Every other page of the add-on opens this page instead
+ of itself until the user agrees to the current privacy policy version (see
+ consent-gate.js and privacy-policy.json).
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="color-scheme" content="dark light">
+<script src="theme.js"></script>
+<meta name="viewport" content="width=device-width">
+<title>Privacy consent &ndash; Zen Source Viewer</title>
+<style>
+* {box-sizing: border-box;}
+html, body {background: var(--bg); color: var(--text);}
+body {
+    margin: 0;
+    padding: 40px 24px;
+    font: 14px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+main {max-width: 720px; margin: 0 auto;}
+a {color: var(--accent); text-decoration: none;}
+a:hover {text-decoration: underline;}
+[hidden] {display: none !important;}
+.page-header {display: flex; align-items: center; gap: 12px; margin-bottom: 24px;}
+.page-header img {width: 36px; height: 36px; border-radius: 8px;}
+.page-header h1 {
+    margin: 0;
+    font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    font-size: 24px;
+    font-weight: 400;
+    line-height: 1.25;
+}
+.page-header p {margin: 0; font-size: 13px; color: var(--text-muted);}
+.card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 22px;
+}
+h2 {margin: 0 0 6px; font-size: 17px; font-weight: 600;}
+.intro {margin: 0 0 14px; color: var(--text-muted);}
+.version-badge {
+    display: inline-block;
+    padding: 0 10px;
+    font-size: 11.5px;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-radius: 999px;
+    white-space: nowrap;
+}
+.policy-frame {
+    display: block;
+    width: 100%;
+    height: 46vh;
+    min-height: 220px;
+    border: 1px solid var(--border-strong);
+    border-radius: 12px;
+    background: var(--surface);
+}
+.policy-links {margin: 6px 2px 16px; font-size: 12.5px;}
+.agree {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 0 0 16px;
+    cursor: pointer;
+}
+.agree input {margin: 3px 0 0; width: 16px; height: 16px; accent-color: var(--accent); flex: none;}
+.actions {display: flex; flex-wrap: wrap; gap: 10px;}
+button {
+    padding: 8px 18px;
+    font: inherit;
+    font-weight: 500;
+    color: var(--text);
+    background: transparent;
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    cursor: pointer;
+}
+button.primary {color: var(--bg); background: var(--accent); border-color: var(--accent);}
+button:disabled {opacity: 0.45; cursor: default;}
+button:focus-visible, .agree input:focus-visible {outline: none; box-shadow: 0 0 0 3px var(--focus-ring);}
+.site-choices {display: flex; flex-direction: column; gap: 2px; margin: 0 0 12px;}
+.site-choice {display: flex; align-items: flex-start; gap: 10px; padding: 8px 10px; border-radius: 10px; cursor: pointer;}
+.site-choice:hover {background: var(--surface-hover);}
+.site-choice input {margin: 3px 0 0; width: 16px; height: 16px; accent-color: var(--accent); flex: none;}
+.site-choice strong {display: block; font-weight: 500;}
+.site-choice small {display: block; font-size: 12px; color: var(--text-muted);}
+.site-choice code {font-size: 12px;}
+.site-group {margin: 8px 0 2px; padding: 0 10px; font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-subtle, var(--text-muted));}
+.site-group:first-child {margin-top: 0;}
+.site-choice > span {flex: 1; min-width: 0;}
+.site-button {flex: none; align-self: center; padding: 3px 12px; font-size: 12px; font-weight: 400; color: var(--text-muted);}
+.site-button:hover {color: var(--text); border-color: var(--accent);}
+.site-removed {cursor: default;}
+.site-removed:hover {background: none;}
+.site-removed strong {color: var(--text-muted);}
+.site-removed-head {display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 6px 10px 4px;}
+.site-empty {margin: 0; padding: 8px 10px; font-size: 13px; color: var(--text-muted);}
+html.in-popup .site-button {padding: 2px 10px; font-size: 11px;}
+.site-notice {margin: 0 0 14px; padding: 10px 12px; font-size: 12.5px; color: var(--text-muted); background: var(--accent-soft); border-radius: 10px;}
+html.in-popup #sites h2 {margin-bottom: 6px; font-size: 16px;}
+html.in-popup #sites .intro {margin-bottom: 8px; font-size: 12.5px; line-height: 1.45;}
+html.in-popup .site-choices {margin-bottom: 8px;}
+html.in-popup .site-choice {padding: 4px 8px; line-height: 1.35;}
+html.in-popup .site-choice strong {font-size: 13px;}
+html.in-popup .site-choice small {font-size: 11px;}
+html.in-popup .site-group {margin: 4px 0 0; padding: 0 8px; font-size: 10px;}
+html.in-popup .site-notice {margin-bottom: 10px; padding: 8px 10px; font-size: 11px; line-height: 1.45;}
+html.in-popup #sites .status {margin-top: 6px;}
+.status {margin: 14px 0 0; font-size: 13px; color: var(--text-muted);}
+.status.error {color: var(--danger);}
+.doc-tabs {display: flex; gap: 6px; margin: 0 0 8px;}
+.doc-tab {padding: 5px 12px; font: inherit; font-size: 12.5px; color: var(--text-muted); background: transparent; border: 1px solid var(--border-strong); border-radius: 999px; cursor: pointer;}
+.doc-tab[aria-selected="true"] {color: var(--accent-soft-text, var(--text)); background: var(--accent-soft); border-color: var(--accent);}
+.eula-note {margin: 6px 0 10px; font-size: 12px; color: var(--text-muted);}
+html.in-popup .eula-note {font-size: 11px; margin: 4px 0 6px;}
+.done-links {display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px;}
+.done-links a {
+    padding: 7px 14px;
+    font-size: 13px;
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+}
+footer {margin-top: 24px; font-size: 12px; color: var(--text-subtle); text-align: center;}
+footer nav {display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 16px;}
+footer a {color: var(--text-muted);}
+/* Shown in the toolbar popup. */
+/* Same box as the popup (popup.html), so both open at the same size. */
+html.in-popup body {width: 520px; min-width: 520px; min-height: 600px; padding: 20px;}
+html.in-popup .page-header {margin-bottom: 14px;}
+html.in-popup .page-header h1 {font-size: 19px;}
+html.in-popup .card {padding: 16px; margin-bottom: 0;}
+html.in-popup .policy-frame {height: 220px; min-height: 0;}
+html.in-popup footer {display: none;}
+</style>
+<link rel="stylesheet" href="theme.css">
+</head>
+<body class="document-page">
+<main>
+<header class="page-header">
+    <img src="icons/48.png" alt="">
+    <div>
+        <h1>Zen Source Viewer</h1>
+        <p>Privacy consent</p>
+    </div>
+</header>
+
+<div class="card">
+    <p id="loading" class="intro">Checking&hellip;</p>
+
+    <form id="consent-form" hidden>
+        <h2 id="consent-title">Before you start</h2>
+        <p class="intro" id="consent-intro">
+            Please read the privacy policy and the End User License Agreement, and agree to them to use
+            Zen Source Viewer. The add-on stays turned off until you agree.
+        </p>
+        <div class="doc-tabs" role="tablist" aria-label="Documents">
+            <button type="button" role="tab" class="doc-tab" data-doc="privacy.html" aria-selected="true">Privacy Policy</button>
+            <button type="button" role="tab" class="doc-tab" data-doc="eula.html" aria-selected="false">License Agreement (EULA)</button>
+        </div>
+        <iframe class="policy-frame" id="policy-frame" title="Privacy Policy" src="privacy.html?embed"></iframe>
+        <p class="policy-links">
+            <span class="version-badge" id="policy-version"></span>
+            &middot; <a href="privacy.html" target="_blank">Privacy Policy</a>
+            &middot; <a href="eula.html" target="_blank">End User License Agreement</a> (open in a new tab)
+        </p>
+        <p class="eula-note">Under the End User License Agreement you must not violate any law, and you must check which
+            laws apply to you and to your use. It covers the packaged add-on only. It does not limit your
+            rights in the <a href="https://github.com/subham8907/Zen-Source-Viewer" target="_blank" rel="noopener">source code</a>
+            under the Mozilla Public License 2.0 and The 21st Century Liberation License.</p>
+        <label class="agree">
+            <input type="checkbox" id="agree-checkbox">
+            <span>I have read and agree to the <a href="privacy.html" target="_blank">Privacy Policy</a> and the
+                <a href="eula.html" target="_blank">End User License Agreement</a> (version <span class="policy-version-number"></span>).</span>
+        </label>
+        <div class="actions">
+            <button type="submit" class="primary" id="agree-button" disabled>Agree and continue</button>
+            <button type="button" id="decline-button">Decline</button>
+        </div>
+        <p class="status" id="status" role="status"></p>
+    </form>
+
+    <form id="sites" hidden>
+        <h2>Choose add-on sites</h2>
+        <p class="intro">Zen Source Viewer only connects to an add-on site when you open an add-on from it. Every site
+            is off until you turn it on here. You can open local files without turning on any site, and change
+            this later in Settings.</p>
+        <div class="site-choices" id="site-choices"></div>
+        <div class="site-choices" id="site-removed" hidden></div>
+        <p class="site-notice">Zen Source Viewer is an independent project. It is not made, endorsed or sponsored by
+            Mozilla, Thunderbird, Google, Microsoft, Opera or any site listed here, and listing a site does not mean we endorse it. When you
+            open an add-on from a site, that site receives your request, including your IP address, under its own
+            privacy policy.</p>
+        <div class="actions">
+            <button type="submit" class="primary" id="sites-continue">Continue</button>
+        </div>
+        <p class="status" id="sites-status" role="status"></p>
+    </form>
+
+    <div id="declined" hidden>
+        <h2>Zen Source Viewer is turned off</h2>
+        <p class="intro">Without your agreement the add-on does nothing. You can agree at any time from this page,
+            or remove the add-on.</p>
+        <div class="actions">
+            <button type="button" class="primary" id="review-again">Review the documents again</button>
+            <button type="button" id="uninstall-button">Remove the add-on</button>
+        </div>
+        <p class="status" id="declined-status" role="status"></p>
+    </div>
+
+    <div id="done" hidden>
+        <h2>Thank you</h2>
+        <p class="intro" id="done-text"></p>
+        <div class="done-links">
+            <a href="viewer.html">Open Viewer</a>
+            <a href="compare.html">Compare versions</a>
+            <a href="options.html">Settings</a>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <nav>
+        <a href="privacy.html" target="_blank">Privacy Policy</a>
+        <a href="eula.html" target="_blank">End User License Agreement</a>
+        <a href="license.html" target="_blank">License &amp; Credits</a>
+    </nav>
+</footer>
+</main>
+<script src="consent-state.js"></script>
+<script src="store-domains.js"></script>
+<script src="consent.js"></script>
+</body>
+</html>

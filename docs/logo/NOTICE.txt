@@ -1,0 +1,40 @@
+License logo
+Copyright 2026 Subham Mahesh
+SPDX-License-Identifier: LicenseRef-21CLL-1.0-CV-LGPL-3.0-only OR LGPL-3.0-only
+
+This notice applies to each of the following files in this folder, which
+cannot carry a notice of their own:
+
+  license-mark.svg
+  license-mark.png
+  license-logo.svg
+  license-logo.png
+  license-logo-dark.svg
+  license-logo-dark.png
+
+and to the copies of license-logo.png and license-logo-dark.png included in the
+packaged add-on as images/license-logo.png and images/license-logo-dark.png.
+
+Licensed under The 21st Century Liberation License Version 1.0 (the
+"License"). You may copy and distribute these files, with or without
+changes, only in compliance with the License. You may obtain a copy in
+LICENSE.txt in the source code or LICENSE-21ST-CENTURY-LIBERATION.txt in
+the packaged add-on.
+
+These files are also subject to the Contributor Variation set named
+"LGPL-3.0-only" in Exception.txt. Copies of the variation and LGPLv3 text are
+included with this work. Its incorporated GPLv3 base text is included as
+GPL-3.0.txt and is not a separate license option.
+
+Unless required by applicable law or agreed to in writing, these files are
+distributed under the License on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+CONDITIONS OF ANY KIND, either express or implied. See the License for the
+specific language governing permissions and limitations under the License.
+
+Object form: this product includes files licensed under The 21st Century
+Liberation License Version 1.0, with Contributor Variations
+"LGPL-3.0-only". Copies of the License, the variation, and the LGPLv3 text are
+included with this product. Its incorporated GPLv3 base text is included as
+GPL-3.0.txt and is not a separate license option. In the
+packaged add-on the License is LICENSE-21ST-CENTURY-LIBERATION.txt and the variation is
+Exception.txt (LICENSE.txt there is the Mozilla Public License 2.0).

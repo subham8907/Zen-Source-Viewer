@@ -28,6 +28,7 @@ var dataMap = {};
 var dataMapLowerCase = {};
 
 var currentSearchTerm = '';
+var currentRequestId = 0;
 var lowPrioFilenames = [];
 
 // When not all data is available yet, the search job is suspended and stored here.
@@ -50,30 +51,26 @@ self.onmessage = function(event) {
     // or message.lowPrioFilenames differs from lowPrioFilenames.
 
     currentSearchTerm = message.searchTerm;
-    lowPrioFilenames = message.lowPrioFilenames;
-    if (!fileEntries || !currentSearchTerm) {
-        return;
-    }
-    var filenames = prioritizedFilenames(allFilenames);
+    currentRequestId = message.requestId;
+    lowPrioFilenames = message.lowPrioFilenames || [];
     if (pendingSearch) {
         pendingSearch.cancel();
         pendingSearch = null;
     }
-    new SearchTask(filenames, message.searchTerm).next();
+    if (!fileEntries || !currentSearchTerm) {
+        return;
+    }
+    var filenames = prioritizedFilenames(allFilenames);
+    new SearchTask(filenames, message.searchTerm, currentRequestId).next();
 };
 
 function prioritizedFilenames(filenames) {
-    filenames = filenames.slice();
-    // Optimize for minimal overhead by removing low-priority file names.
-    // In the past, low-priority files were pushed to the end, but that
-    // results in unnecessary CPU and memory usage for situations where
-    // one searches for a pattern in specific files only.
-    lowPrioFilenames.forEach(function(filename) {
-        var i = filenames.indexOf(filename);
-        if (i === -1) throw new Error("Unknown file: " + filename);
-        filenames.splice(i, 1);
+    // Keep this O(files + low-priority files); repeated indexOf/splice becomes
+    // quadratic for large archives and filename filters.
+    var lowPriority = new Set(lowPrioFilenames);
+    return filenames.filter(function(filename) {
+        return !lowPriority.has(filename);
     });
-    return filenames;
 }
 
 function loadFromZip(zipBlob) {
@@ -96,7 +93,9 @@ function loadFromZip(zipBlob) {
                 allFilenames.push(entry.filename);
             });
             if (currentSearchTerm) {
-                new SearchTask(prioritizedFilenames(allFilenames), currentSearchTerm).next();
+                new SearchTask(
+                    prioritizedFilenames(allFilenames), currentSearchTerm, currentRequestId
+                ).next();
             }
         });
     }, function(e) {
@@ -139,11 +138,12 @@ function normalizeTextForSearch(text) {
     return text.toLocaleLowerCase();
 }
 
-function SearchTask(filenames, searchTerm) {
+function SearchTask(filenames, searchTerm, requestId) {
     this.filenames = filenames;
     // The exact input search query. This will be used by the calling thread to
     // determine whether the search result still matches the search query.
     this.searchTerm = searchTerm;
+    this.requestId = requestId;
     // Keep this search term parsing logic in sync with
     // TextSearchEngine.prototype.getCurrentSearchTerm.
     // "iregexp:" is case-insensitive, "regexp:" is case-sensitive.
@@ -208,7 +208,7 @@ SearchTask.prototype.next = function() {
         } else {
             this.notfound.push(filename);
         }
-    } while ((Date.now() - startTime) < 500);
+    } while ((Date.now() - startTime) < 75);
     // ^ Do not work too much
 
     // Keep track of the time spent in the loop to measure the impact of search algorithm changes
@@ -249,6 +249,7 @@ SearchTask.prototype.sendResults = function(forceSend) {
         found: this.found,
         notfound: this.notfound,
         searchTerm: this.searchTerm,
+        requestId: this.requestId,
         remaining: this.filenames.length,
         querytime: this.querytime,
     });

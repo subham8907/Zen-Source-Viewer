@@ -7,7 +7,8 @@
  *
  * Modified by Subham Mahesh (2026): build reduced to a Firefox-only target;
  * added the bundle targets (CodeMirror, MD5); removed CRX helper files; generates
- * the third-party license list for license.html. */
+ * the third-party license list for license.html; generates privacy.html from
+ * PRIVACY.md and EULA.md; ships the license page generated from LICENSE.txt. */
 
 // Build tool, adapted from PDF.js
 /* jshint node:true */
@@ -24,6 +25,7 @@ var SRC_DIR = ROOT_DIR + 'src/';
 var FIREFOX_BUILD_DIR = BUILD_DIR + 'firefox/';
 var ALLOWED_FILES = [
     'manifest.json',
+    'privacy-policy.json',
     '.css',
     '.html',
     '.js',
@@ -45,12 +47,24 @@ function getBuildConfig(options) {
         },
         mkdirs: [
             dest_dir + 'icons',
+            dest_dir + 'images',
         ],
         copy: [
             [SRC_DIR + 'lib', dest_dir],
             [SRC_DIR + 'icons/*.png', dest_dir + 'icons'],
             [SRC_DIR + 'manifest.json', dest_dir],
+            [SRC_DIR + 'privacy-policy.json', dest_dir],
             [ROOT_DIR + 'LICENSE', dest_dir + 'LICENSE.txt'],
+            [ROOT_DIR + 'LICENSE.txt', dest_dir + 'LICENSE-21ST-CENTURY-LIBERATION.txt'],
+            [ROOT_DIR + 'Exception.txt', dest_dir + 'Exception.txt'],
+            [ROOT_DIR + 'GPL-3.0.txt', dest_dir + 'GPL-3.0.txt'],
+            [ROOT_DIR + 'LGPL-3.0.txt', dest_dir + 'LGPL-3.0.txt'],
+            [ROOT_DIR + 'NOTICE.txt', dest_dir + 'NOTICE.txt'],
+            [ROOT_DIR + 'EULA.md', dest_dir + 'EULA.txt'],
+            // The license logo, shown on license.html (light and dark versions).
+            [ROOT_DIR + 'docs/logo/license-logo.png', dest_dir + 'images'],
+            [ROOT_DIR + 'docs/logo/license-logo-dark.png', dest_dir + 'images'],
+            [ROOT_DIR + 'docs/logo/NOTICE.txt', dest_dir + 'images/NOTICE.txt'],
         ],
         preprocess: [
             [SRC_DIR + '*.html', dest_dir],
@@ -77,7 +91,31 @@ function build(setup, output_root_dir) {
     builder.build(setup);
     // Licenses of all third-party code, shown on license.html.
     require('./external/licenses/generate').generate(output_root_dir + 'third-party-licenses.js');
+    // The Privacy Policy page, from PRIVACY.md and the version in privacy-policy.json.
+    require('./external/privacy/generate').generate(output_root_dir + 'privacy.html');
+    // The End User License Agreement page, from EULA.md.
+    require('./external/privacy/generate').generateEula(output_root_dir + 'eula.html');
+    // The license page: docs/21st-century-liberation-license.html, unchanged.
+    copyLicenseDocumentPage(output_root_dir + '21st-century-liberation-license.html');
     exec(ROOT_DIR + '/node_modules/.bin/lessc --strict-math=on "' + SRC_DIR + 'viewer.less" "' + output_root_dir + 'viewer.css"');
+    exec(ROOT_DIR + '/node_modules/.bin/lessc --strict-math=on "' + SRC_DIR + 'theme.less" "' + output_root_dir + 'theme.css"');
+}
+
+// Copies docs/21st-century-liberation-license.html, byte for byte, to outputFile. Fails if docs/21st-century-liberation-license.html
+// is not exactly the page generated from the current LICENSE.txt (run
+// "node external/licenses/license-html.js" to update it), or if the copy differs.
+function copyLicenseDocumentPage(outputFile) {
+    var fs = require('fs');
+    var docsPage = fs.readFileSync(ROOT_DIR + 'docs/21st-century-liberation-license.html');
+    var expected = Buffer.from(require('./external/licenses/license-html').html(), 'utf8');
+    if (!docsPage.equals(expected)) {
+        throw new Error('docs/21st-century-liberation-license.html is out of date with LICENSE.txt. ' +
+            'Run "node external/licenses/license-html.js" first.');
+    }
+    fs.writeFileSync(outputFile, docsPage);
+    if (!fs.readFileSync(outputFile).equals(docsPage)) {
+        throw new Error('21st-century-liberation-license.html is not an exact copy of docs/21st-century-liberation-license.html.');
+    }
 }
 
 function removeTestFiles() {
@@ -131,6 +169,27 @@ target.licenses = function() {
     echo();
     echo('Generating third-party-licenses.js...');
     require('./external/licenses/generate').generate(SRC_DIR + 'third-party-licenses.js');
+};
+
+// Writes privacy.html to src/ (from PRIVACY.md) for testing without a build.
+target.privacy = function() {
+    echo();
+    echo('Generating privacy.html...');
+    require('./external/privacy/generate').generate(SRC_DIR + 'privacy.html');
+};
+
+// Writes eula.html to src/ (from EULA.md) for testing without a build.
+target.eula = function() {
+    echo();
+    echo('Generating eula.html...');
+    require('./external/privacy/generate').generateEula(SRC_DIR + 'eula.html');
+};
+
+// Copies docs/21st-century-liberation-license.html to src/21st-century-liberation-license.html for testing without a build.
+target.licenseDocument = function() {
+    echo();
+    echo('Copying 21st-century-liberation-license.html...');
+    copyLicenseDocumentPage(SRC_DIR + '21st-century-liberation-license.html');
 };
 
 target.all = function() {

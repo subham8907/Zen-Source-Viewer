@@ -5,97 +5,98 @@
  License, v. 2.0. If a copy of the MPL was not distributed with this
  file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
- Modified by Subham Mahesh, 2026: redesigned the user interface; reduced to Firefox only (removed Chrome, Opera and web-demo code); added a License & Credits link; renamed to Zen Source Viewer; removed CRX support.
+ Modified by Subham Mahesh, 2026: redesigned the user interface; reduced to Firefox only (removed Chrome, Opera and web-demo code); added a License & Credits link; renamed to Zen Source Viewer; made it the popup of a toolbar button that works on every page, with opening of .xpi/.zip files (dropped here, or chosen in a viewer tab because Firefox closes popups when a file dialog opens), opening a URL, and links to Compare versions and Settings; added a Privacy Policy link and the privacy consent gate; opens extensions for Chromium-based browsers (CRX files) again.
 -->
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
+<!-- Privacy consent gate: must stay the first script (see consent-gate.js). -->
+<script src="consent-gate.js"></script>
 <title>Zen Source Viewer</title>
-<meta name="color-scheme" content="light dark">
+<meta name="color-scheme" content="dark light">
+<script src="theme.js"></script>
 <style>
-    :root {
-        --bg: #f4f2ed;
-        --surface: #faf9f6;
-        --surface-hover: #ece8e0;
-        --border: #e3dfd5;
-        --border-strong: #d3cec2;
-        --text: #2f2d29;
-        --text-muted: #8a847a;
-        --accent: #5b7360;
-        --accent-hover: #4b6150;
-        --accent-text: #f8f7f2;
-        --accent-soft: #e5eae1;
-        --focus-ring: rgba(91, 115, 96, 0.28);
-        color-scheme: light;
-    }
-    @media (prefers-color-scheme: dark) {
-        :root {
-            --bg: #161614;
-            --surface: #1c1c19;
-            --surface-hover: #272723;
-            --border: #2d2c28;
-            --border-strong: #3a3934;
-            --text: #e2ded4;
-            --text-muted: #8f8a80;
-            --accent: #9db5a1;
-            --accent-hover: #b0c6b3;
-            --accent-text: #161714;
-            --accent-soft: rgba(157, 181, 161, 0.13);
-            --focus-ring: rgba(157, 181, 161, 0.3);
-            color-scheme: dark;
-        }
-    }
     * {box-sizing: border-box;}
+    [hidden] {display: none !important;}
     html, body {margin: 0;}
     body {
-        width: 256px;
-        padding: 18px 16px 16px;
+        width: 520px;
+        min-width: 520px;
+        min-height: 600px;
+        padding: 20px;
         font: 13px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
         color: var(--text);
         background: var(--bg);
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: 16px;
     }
     header {
         display: flex;
         align-items: center;
         gap: 10px;
-        padding: 0 2px 14px;
-        margin-bottom: 4px;
-        border-bottom: 1px solid var(--border);
     }
-    header img {width: 28px; height: 28px; border-radius: 6px;}
+    header img {width: 36px; height: 36px; border-radius: 10px;}
     header h1 {
         margin: 0;
-        font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
-        font-size: 16px;
-        font-weight: 400;
-        letter-spacing: 0.01em;
+        font-family: inherit;
+        font-size: 14px;
+        font-weight: 650;
+        letter-spacing: -0.025em;
         line-height: 1.2;
     }
-    header p {margin: 0; font-size: 11.5px; color: var(--text-muted);}
+    header p {margin: 3px 0 0; font-size: 9px; letter-spacing: 0.07em; color: var(--text-muted);}
     a {color: var(--accent);}
+    section {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .section-label {
+        margin: 0;
+        font-size: 10.5px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+    }
+    .page-card {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 16px;
+        box-shadow: var(--shadow-sm);
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+    }
+    .page-name {
+        margin: 0;
+        overflow: hidden;
+        font-weight: 500;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+    .page-actions {display: flex; gap: 8px;}
     button {
         position: relative;
-        display: flex;
+        display: inline-flex;
         align-items: center;
-        gap: 10px;
-        width: 100%;
-        padding: 10px 14px;
+        justify-content: center;
+        gap: 8px;
+        padding: 8px 12px;
         overflow: hidden;
         font: inherit;
-        font-weight: 400;
-        text-align: left;
         color: var(--text);
-        background: transparent;
-        border: 1px solid var(--border);
-        border-radius: 10px;
+        background: var(--surface);
+        border: 1px solid var(--border-strong);
+        border-radius: 9px;
         cursor: pointer;
         transition: background-color 0.12s, border-color 0.12s, box-shadow 0.12s;
     }
+    .page-actions button {flex: 1;}
     button:hover {background: var(--surface-hover);}
-    button:focus-visible {
+    button:focus-visible, input:focus-visible, .drop:focus-visible, nav a:focus-visible {
         outline: none;
         border-color: var(--accent);
         box-shadow: 0 0 0 3px var(--focus-ring);
@@ -109,8 +110,7 @@
         background: var(--accent-hover);
         border-color: var(--accent-hover);
     }
-    button[type=submit], button[type=reset] {justify-content: center;}
-    button svg {flex: none; width: 16px; height: 16px;}
+    button svg {flex: none; width: 15px; height: 15px;}
     button progress {
         position: absolute;
         bottom: 0;
@@ -120,11 +120,8 @@
         border: 0;
         appearance: none;
         background: transparent;
-        accent-color: var(--accent-text);
     }
-    button progress::-webkit-progress-bar {background: transparent;}
-    button progress::-webkit-progress-value {background: currentColor;}
-    button progress::-moz-progress-bar {background: currentColor;}
+    button progress::-moz-progress-bar {background: var(--accent);}
     #download.downloading .idle,
     #download:not(.downloading) .busy {
         display: none;
@@ -133,60 +130,198 @@
         display: flex;
         flex-direction: column;
         gap: 8px;
-        padding: 12px;
-        font-size: 12.5px;
+        padding: 10px;
+        font-size: 12px;
         color: var(--text-muted);
         background: var(--accent-soft);
         border-radius: 8px;
     }
     #permission_missing_form[hidden] {display: none;}
-    #permission_missing_form p {margin: 0 0 4px;}
-    #permission_missing_form:not([hidden]) ~ button {
-        display: none;
+    #permission_missing_form p {margin: 0;}
+    #permission_missing_form div {display: flex; gap: 8px;}
+    #permission_missing_form button {flex: 1;}
+    #permission_missing_form:not([hidden]) ~ .page-actions {display: none;}
+
+    .drop {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 12px;
+        width: 100%;
+        padding: 20px 16px;
+        color: var(--text);
+        text-align: left;
+        background: var(--bg);
+        border: 1.5px dashed var(--border-strong);
+        border-radius: 12px;
+        cursor: pointer;
+        transition: background-color 0.12s, border-color 0.12s;
     }
-    .credits {
-        margin: 2px 0 0;
-        font-size: 11px;
-        text-align: center;
+    .drop:hover, .drop.dragover {
+        background: var(--accent-soft);
+        border-color: var(--accent);
     }
-    .credits a {color: var(--text-muted); text-decoration: none;}
-    .credits a:hover {color: var(--accent);}
+    .drop svg {flex: none; width: 22px; height: 22px; color: var(--accent);}
+    .drop strong {display: block; font-weight: 500;}
+    .drop small {display: block; font-size: 11.5px; color: var(--text-muted);}
+    #url-form {display: flex; gap: 6px;}
+    #url-form input {
+        flex: 1;
+        min-width: 0;
+        padding: 7px 10px;
+        font: inherit;
+        color: var(--text);
+        background: var(--surface);
+        border: 1px solid var(--border-strong);
+        border-radius: 9px;
+    }
+    #url-form input::placeholder {color: var(--text-muted);}
+    #open-error {margin: 0; font-size: 12px; color: var(--danger);}
+    #open-error:empty {display: none;}
+
+    nav {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 4px;
+        padding-top: 0;
+    }
+    nav a {
+        display: flex;
+        grid-column: span 2;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 11px 8px;
+        font-size: 11.5px;
+        color: var(--text);
+        white-space: normal;
+        min-width: 0;
+        text-decoration: none;
+        border: 1px solid transparent;
+        border-radius: 8px;
+    }
+    nav a:nth-child(-n+2) {grid-column: span 3; justify-content: flex-start; padding: 13px 12px; background: var(--surface); border-color: var(--border); border-radius: 9px;}
+    nav a:hover {background: var(--surface-hover);}
+    nav svg {flex: none; width: 15px; height: 15px; color: var(--text-muted);}
+    .hint {margin: 0; font-size: 11.5px; color: var(--text-muted);}
     dialog {
         border: 1px solid var(--border);
         border-radius: 10px;
         background: var(--bg);
         color: var(--text);
     }
-    dialog button {margin-top: 10px; justify-content: center;}
+    dialog button {display: flex; margin-top: 10px; width: 100%;}
+    .popup-open-card {padding: 18px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow-sm); gap: 10px;}
+    .section-heading {display: flex; align-items: center; justify-content: space-between; gap: 8px;}
+    .format-badge {padding: 2px 6px; font-size: 9px; font-weight: 600; letter-spacing: 0.04em; color: var(--text-subtle); background: var(--bg); border: 1px solid var(--border); border-radius: 4px;}
+    .url-label {margin-bottom: -6px; font-size: 10px; color: var(--text-muted);}
+    .popup-footer {margin-top: auto; padding-top: 12px; border-top: 1px solid var(--border);}
+    .popup-appearance {min-width: 0;}
+    .popup-appearance > .section-label {display: block; margin-bottom: 8px;}
+    .popup-page .theme-options {display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; min-width: 0;}
+    .popup-page .theme-options button {min-width: 0; padding: 5px 6px; font-size: 10.5px; gap: 4px;}
+    .drop > span {min-width: 0;}
+    @media (max-width: 340px) {
+        body {padding: 12px; gap: 12px;}
+        .popup-open-card {padding: 12px;}
+        nav a:nth-child(-n+2) {padding: 10px 8px; font-size: 10.5px;}
+    }
+    .popup-privacy {display: flex; align-items: center; justify-content: center; gap: 6px; margin: 14px 0 0; font-size: 10px; color: var(--text-muted);}
+    .popup-privacy .ui-icon {width: 11px; height: 11px; color: var(--accent);}
+    .popup-sites {margin: 6px 0 0; font-size: 10px; text-align: center; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
+    .popup-sites a {color: var(--accent);}
 </style>
+<link rel="stylesheet" href="theme.css">
 </head>
-<body>
+<body class="popup-page">
 <header>
     <img src="icons/48.png" alt="">
     <div>
         <h1>Zen Source Viewer</h1>
-        <p>Inspect this extension&rsquo;s code</p>
+        <p>YOUR ADD-ON WORKSPACE</p>
     </div>
 </header>
-<form id="permission_missing_form" hidden>
-    <p>To view this extension's source, an extra permission is needed.
-    It can be revoked at any time on the
-    <a href="/options.html" target="_blank">options page</a>.</p>
-    <button type="submit">Add permission</button>
-    <button type="reset">Cancel</button>
-</form>
-<button id="view-source" class="primary" title="View source of extension in a new tab">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 18 6-6-6-6"/><path d="m8 6-6 6 6 6"/></svg>
-    View source
-</button>
-<button id="download" title="Download extension in zip format">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
-    <span class="idle">Download as zip</span>
-    <span class="busy">Downloading&hellip;</span>
-</button>
-<p class="credits"><a href="/license.html" target="_blank">License &amp; Credits</a></p>
+
+<section id="this-page" hidden>
+    <p class="section-label">On this page</p>
+    <div class="page-card">
+        <p class="page-name" id="page-name"></p>
+        <form id="permission_missing_form" hidden>
+            <p>To view this add-on's source, an extra permission is needed.
+            It can be revoked at any time on the
+            <a href="/options.html" target="_blank">settings page</a>.</p>
+            <div>
+                <button type="submit">Add permission</button>
+                <button type="reset">Cancel</button>
+            </div>
+        </form>
+        <div class="page-actions">
+            <button id="view-source" class="primary" title="View the source of this add-on in a new tab">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 18 6-6-6-6"/><path d="m8 6-6 6 6 6"/></svg>
+                View source
+            </button>
+            <button id="download" title="Download this add-on as a zip file">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+                <span class="idle">Download zip</span>
+                <span class="busy">Downloading&hellip;</span>
+            </button>
+        </div>
+    </div>
+</section>
+
+<section class="popup-open-card">
+    <div class="section-heading"><p class="section-label">Open an add-on</p><span class="format-badge">XPI / CRX / ZIP</span></div>
+    <button type="button" class="drop" id="drop" title="Opens a tab where you choose an .xpi, .crx or .zip file from your computer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3"/><path d="m7 8 5-5 5 5"/><path d="M20 15v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-4"/></svg>
+        <span>
+            <strong>Browse local files</strong>
+            <small>Choose a file or drop it here.</small>
+        </span>
+    </button>
+    <label class="url-label" for="popup-url">Or paste an add-on or file URL</label>
+    <form id="url-form">
+        <input id="popup-url" aria-label="Add-on page or file URL" type="url" name="url" placeholder="https://addons.mozilla.org/…" required>
+        <button type="submit">Open</button>
+    </form>
+    <p id="open-error" role="alert"></p>
+    <p class="hint" id="no-addon-hint" hidden>Tip: the toolbar also works on add-on pages.</p>
+</section>
+
+<nav aria-label="Quick links">
+    <a href="compare.html" data-page="compare.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/></svg>
+        Compare versions
+    </a>
+    <a href="viewer.html" data-page="viewer.html" title="Search addons.mozilla.org for an add-on and its versions">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        Find an add-on
+    </a>
+    <a href="options.html" data-page="options.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h10"/><path d="M18 6h2"/><circle cx="16" cy="6" r="2"/><path d="M4 18h4"/><path d="M12 18h8"/><circle cx="10" cy="18" r="2"/><path d="M4 12h2"/><path d="M10 12h10"/><circle cx="8" cy="12" r="2"/></svg>
+        Settings
+    </a>
+    <a href="license.html" data-page="license.html" title="License &amp; Credits">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg>
+        Credits
+    </a>
+    <a href="privacy.html" data-page="privacy.html" title="Privacy Policy">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg>
+        Privacy
+    </a>
+</nav>
+<footer class="popup-footer">
+    <div class="popup-appearance"><span class="section-label">Appearance</span><div class="theme-options" role="group" aria-label="Appearance">
+    <button type="button" data-theme-option="system" aria-pressed="false"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8m-4-4v4"/></svg>System</button>
+    <button type="button" data-theme-option="light" aria-pressed="false"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg>Light</button>
+    <button type="button" data-theme-option="dark" aria-pressed="false"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14a8 8 0 0 1-10-10 8 8 0 1 0 10 10Z"/></svg>Dark</button>
+</div></div>
+    <p class="theme-status" data-theme-status role="status"></p>
+    <p class="popup-privacy"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Local files stay on your device</p>
+    <p class="popup-sites" id="popup-sites" hidden>Add-on sites: <span id="popup-sites-list"></span> &middot; <a href="options.html#store-sites" target="_blank" id="popup-sites-change">Change</a></p>
+</footer>
 <script src="domain-fronter.js"></script>
 <script src="open-addon.js"></script>
+<script src="store-domains.js"></script>
 <script src="addon-urls.js"></script>
 <script src="popup.js"></script>
 </body>

@@ -5,18 +5,23 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  * Modified by Subham Mahesh, 2026: reduced to Firefox only (removed Chrome, Opera and web-demo code,
- * and Chrome/Edge/Opera CRX links and add-on sites). */
+ * and Chrome/Edge/Opera CRX links and add-on sites); moved the button menu from the address bar button
+ * to the toolbar button.
+ * Menu items only for add-on sites the user turned on.
+ * Links to CRX files, and pages of the Chrome Web Store, Edge Add-ons and Opera add-ons, have menu items again. */
 
 /* jshint browser:true, devel:true, esversion:6 */
-/* globals chrome, amo_match_patterns, atn_match_patterns, get_addon_download_url */
-/* globals encodeQueryString */
+/* globals chrome, get_store_match_patterns, get_crx_store_match_patterns, get_addon_download_url, ZenStoreDomains */
+/* globals encodeQueryString, ZenConsent */
 
 'use strict';
 (function() {
     var MENU_ID_LINK = 'nl.robwu.contextmenu.addonlink';
     var MENU_ID_AMO_APPROVED_LINK = 'nl.robwu.contextmenu.amoapprovedlink';
     var MENU_ID_AMO_APPROVED_PAGE = 'nl.robwu.contextmenu.amoapprovedpage';
-    var MENU_ID_PAGE_ACTION = 'nl.robwu.contextmenu.pageaction';
+    // Pages of the Chrome Web Store, Edge Add-ons and Opera add-ons.
+    var MENU_ID_CRX_STORE_LINK = 'nl.robwu.contextmenu.crxstorelink';
+    var MENU_ID_CRX_STORE_PAGE = 'nl.robwu.contextmenu.crxstorepage';
     var MENU_ID_ACTION_MENU = 'nl.robwu.contextmenu.actionmenu.';
     var MENU_ID_ACTION_MENU_POPUP = MENU_ID_ACTION_MENU + 'popup';
     var MENU_ID_ACTION_MENU_VIEW_SOURCE = MENU_ID_ACTION_MENU + 'view-source';
@@ -25,6 +30,10 @@
     var DEFAULT_LINK_TARGET_URL_PATTERNS = [
         '*://*/*.XPI*',
         '*://*/*.xpi*',
+        '*://*/*.CRX*',
+        '*://*/*.crx*',
+        '*://*/*.NEX*',
+        '*://*/*.nex*',
     ];
 
     chrome.storage.onChanged.addListener(function(changes) {
@@ -133,14 +142,9 @@
             markMenuRegistrationCompleted();
         });
         chrome.contextMenus.create({
-            id: MENU_ID_PAGE_ACTION,
-            title: 'Hide this button',
-            contexts: ['page_action'],
-        });
-        chrome.contextMenus.create({
             id: MENU_ID_ACTION_MENU,
-            title: 'Primary action on click',
-            contexts: ['page_action'],
+            title: 'On add-on pages, clicking does',
+            contexts: ['browser_action'],
         });
         chrome.contextMenus.create({
             id: MENU_ID_ACTION_MENU_POPUP,
@@ -148,7 +152,7 @@
             title: 'Show popup (default)',
             type: 'radio',
             checked: true,
-            contexts: ['page_action'],
+            contexts: ['browser_action'],
         });
         // Note: Keep the same order as in popup.html for consistency.
         chrome.contextMenus.create({
@@ -156,14 +160,14 @@
             parentId: MENU_ID_ACTION_MENU,
             title: 'Download as zip',
             type: 'radio',
-            contexts: ['page_action'],
+            contexts: ['browser_action'],
         });
         chrome.contextMenus.create({
             id: MENU_ID_ACTION_MENU_VIEW_SOURCE,
             parentId: MENU_ID_ACTION_MENU,
             title: 'View source',
             type: 'radio',
-            contexts: ['page_action'],
+            contexts: ['browser_action'],
         });
     }
 
@@ -175,18 +179,15 @@
     }
     
     function contextMenusOnClicked(info, tab) {
-        if (info.menuItemId === MENU_ID_PAGE_ACTION) {
-            // background.js will now pick up the storage change
-            // and disable page actions.
-            chrome.storage.sync.set({showPageAction: false});
-            return;
-        }
         if (info.menuItemId.startsWith(MENU_ID_ACTION_MENU)) {
             var choice = info.menuItemId.slice(MENU_ID_ACTION_MENU.length);
             chrome.storage.sync.set({actionClickAction: choice});
             return;
         }
-        var url = info.menuItemId == MENU_ID_AMO_APPROVED_PAGE ? info.pageUrl : info.linkUrl;
+        var isPage = info.menuItemId == MENU_ID_AMO_APPROVED_PAGE || info.menuItemId == MENU_ID_CRX_STORE_PAGE;
+        var url = isPage ? info.pageUrl : info.linkUrl;
+        // Without privacy consent, the viewer opens the consent page first
+        // (consent-gate.js) and continues after the user agrees.
         openViewerRelatedToTab(get_addon_download_url(url), tab);
     }
     function openViewerRelatedToTab(url, tab) {
@@ -220,23 +221,58 @@
             contexts: ['link'],
             targetUrlPatterns: DEFAULT_LINK_TARGET_URL_PATTERNS,
         });
+        showStoreMenus();
+    }
+    // Menu items for add-on sites; only for the sites turned on in Settings
+    // (store-domains.js), and none at all if every site is turned off.
+    function showStoreMenus() {
+        function ignoreError() {
+            // jshint -W030
+            chrome.runtime.lastError;
+            // jshint +W030
+        }
+        chrome.contextMenus.remove(MENU_ID_AMO_APPROVED_LINK, ignoreError);
+        chrome.contextMenus.remove(MENU_ID_AMO_APPROVED_PAGE, ignoreError);
+        chrome.contextMenus.remove(MENU_ID_CRX_STORE_LINK, ignoreError);
+        chrome.contextMenus.remove(MENU_ID_CRX_STORE_PAGE, ignoreError);
+        var crxPatterns = get_crx_store_match_patterns();
+        if (crxPatterns.length) {
+            // The Chrome, Edge and Opera stores only serve the current version.
+            chrome.contextMenus.create({
+                id: MENU_ID_CRX_STORE_LINK,
+                title: 'View linked extension source',
+                contexts: ['link'],
+                targetUrlPatterns: crxPatterns,
+            });
+            chrome.contextMenus.create({
+                id: MENU_ID_CRX_STORE_PAGE,
+                title: 'View extension source',
+                contexts: ['page', 'frame', 'link'],
+                documentUrlPatterns: crxPatterns,
+            });
+        }
+        var patterns = get_store_match_patterns();
+        if (!patterns.length) return;
         // AMO lists multiple versions, specifically state that this
         // is the latest approved version to avoid ambiguity.
         chrome.contextMenus.create({
             id: MENU_ID_AMO_APPROVED_LINK,
             title: 'View linked extension source (latest approved version)',
             contexts: ['link'],
-            targetUrlPatterns: amo_match_patterns.concat(atn_match_patterns),
+            targetUrlPatterns: patterns,
         });
-        // AMO lists multiple versions, specifically state that this
-        // is the latest approved version to avoid ambiguity.
         chrome.contextMenus.create({
             id: MENU_ID_AMO_APPROVED_PAGE,
             title: 'View extension source (latest approved version)',
             contexts: ['page', 'frame', 'link'],
-            documentUrlPatterns: amo_match_patterns.concat(atn_match_patterns),
+            documentUrlPatterns: patterns,
         });
     }
+    ZenStoreDomains.onChange(function() {
+        chrome.storage.sync.get({showContextMenu: true}, function(items) {
+            if (items.showContextMenu) showStoreMenus();
+        });
+    });
     function hide() {
         function darkhole() {
             // jshint -W030
@@ -246,5 +282,7 @@
         chrome.contextMenus.remove(MENU_ID_LINK, darkhole);
         chrome.contextMenus.remove(MENU_ID_AMO_APPROVED_LINK, darkhole);
         chrome.contextMenus.remove(MENU_ID_AMO_APPROVED_PAGE, darkhole);
+        chrome.contextMenus.remove(MENU_ID_CRX_STORE_LINK, darkhole);
+        chrome.contextMenus.remove(MENU_ID_CRX_STORE_PAGE, darkhole);
     }
 })();

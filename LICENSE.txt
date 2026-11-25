@@ -1,0 +1,1037 @@
+             The 21st Century Liberation License
+                       Version 1.0, November 2026
+
+   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+   1. Definitions and Interpretation.
+
+      (a) Definitions. In this License:
+
+          (i)   The License and Contributor Variations.
+
+                (A) "License" means Sections 1 to 9 and Appendix A, each
+                    as varied, for any Covered Material, by any
+                    Contributor Variation(s) applying to it.
+
+                (B) "Contributor Variation(s)" means any one or more
+                    waivers of a condition of this License, wholly or
+                    partly, and amendments or overrides of a provision
+                    of this License, that a Contributor applies to its
+                    own Covered Material under Section 9. Unless the
+                    context requires otherwise, a reference to
+                    Contributor Variation(s) is to any Contributor
+                    Variation(s) applicable to the Covered Material
+                    concerned.
+
+                (C) "Amend" (and "amendment") includes adding to,
+                    varying, or repealing a provision of this License.
+
+                (D) "Override" means to make a provision of this License
+                    not apply, wholly or partly, so that the Contributor
+                    Variation(s) concerned apply instead, without
+                    changing the text of that provision.
+
+          (ii)  Licensors and Contributors.
+
+                (A) "Licensor" means the owner of IP Rights in the Work,
+                    or anyone authorized by that owner, that grants this
+                    License.
+
+                (B) "Contribution" means any work of authorship
+                    (including the original Work and changes to Covered
+                    Material) that the owner of IP Rights in it, or
+                    anyone authorized to submit it on that owner's
+                    behalf, intentionally submits to the Licensor for
+                    inclusion in the Work, in any communication to the
+                    Licensor or its representatives (including through
+                    mailing lists, version control, and issue tracking
+                    systems managed by or for the Licensor), unless the
+                    communication is conspicuously marked, or otherwise
+                    designated in writing by that owner, as "Not a
+                    Contribution."
+
+                (C) "Contributor" means the Licensor and anyone on whose
+                    behalf the Licensor has received a Contribution and
+                    incorporated it in the Work.
+
+          (iii) Persons and You.
+
+                (A) "Person" means any individual or entity, an entity
+                    being taken together with every other entity that
+                    Controls, is Controlled by, or is under common
+                    Control with it.
+
+                (B) "Control" means the power, direct or indirect, to
+                    cause the direction or management of an entity,
+                    whether by contract or otherwise, or direct,
+                    indirect, or beneficial ownership of fifty per cent
+                    (50%) or more of its outstanding shares or voting
+                    rights.
+
+                (C) "You" (also "Your", "Yours", and "Yourself") means a
+                    Person exercising permissions under this License.
+
+          (iv)  Rights.
+
+                (A) "IP Rights" means copyright, patents, and Other IP
+                    Rights, but excludes trademarks.
+
+                (B) "Other IP Rights" means: (1) rights in industrial
+                    designs and other design rights, whether registered
+                    or not; (2) rights in layout-designs (topographies)
+                    of integrated circuits, including semiconductor
+                    topography rights and mask work rights; and (3)
+                    database rights.
+
+                (C) Copyright, patents, and each distinct right or type
+                    of right named in the definition of Other IP Rights
+                    (including each one named within a numbered item)
+                    are separate categories. Every reference in this
+                    License to IP Rights or Other IP Rights applies to
+                    each category separately, and never to those
+                    categories as one collective category.
+
+                (D) "Protected Material" means material protected by IP
+                    Rights, and a "rights notice" is a notice pertaining
+                    to IP Rights.
+
+                (E) "Licensable" means having the right to grant, to the
+                    maximum extent possible, whether at the time of the
+                    initial grant or subsequently, any and all of the
+                    rights conveyed by this License.
+
+          (v)   Forms.
+
+                (A) "Source" form means the preferred form for making
+                    any modification, including source code, schematics,
+                    net lists, board layouts, mechanical drawings, CAD
+                    files, documentation source, and configuration
+                    files.
+
+                (B) "Object" form means any form resulting from
+                    mechanical transformation or translation of a Source
+                    form, or from applying a Source form to physical
+                    material, including compiled object code, generated
+                    documentation, instantiated hardware designs,
+                    conversions to other media types, and intermediate
+                    forms such as bytecode, FPGA bitstreams, moulds,
+                    artwork, and mask works.
+
+          (vi)  Covered Material.
+
+                (A) "Authorship" includes design.
+
+                (B) "Work" means the work of authorship, in Source or
+                    Object form, made available under this License, as
+                    indicated by a rights notice included in, attached
+                    to, or accompanying it as Appendix A(a) describes.
+
+                (C) "Covered Material" means the Work and its Derivative
+                    Works.
+
+                (D) "Derivative Works" means: (1) any work, in Source or
+                    Object form, that is based on or derived from
+                    Covered Material and whose changes, taken as a
+                    whole, represent an original work of authorship (a
+                    changed version that does not meet this standard
+                    remains part of the Covered Material it was changed
+                    from); and (2) any Protected Material copied or
+                    adapted from Covered Material into another work,
+                    whether new or existing. The rest of that other work
+                    does not thereby become a Derivative Work or Covered
+                    Material, and is not thereby licensed under this
+                    License.
+
+                (E) A work that incorporates no Protected Material from
+                    Covered Material is not a Derivative Work.
+
+          (vii) Limits and Separate Works.
+
+                (A) No work incorporates Protected Material from Covered
+                    Material, or becomes Covered Material, merely
+                    because it: (1) is aggregated, combined, compiled,
+                    linked (statically or dynamically), packaged,
+                    Conveyed, assembled, or physically connected with
+                    Covered Material; (2) calls, references, implements,
+                    or interoperates with its interfaces; (3) restates
+                    its interface declarations (such as names,
+                    signatures, types, constants, and data layouts) as
+                    needed to do so, without copying its implementation;
+                    or (4) has an Object form that incorporates, by
+                    compilation or similar mechanical transformation,
+                    any amount of its interface definitions, macros,
+                    inline functions, or templates.
+
+                (B) "Separate Work" means any work, or any separable
+                    part of a work, that is not part of the Work and
+                    whose Source form incorporates no Protected Material
+                    from Covered Material, other than material received
+                    under separate terms and combined with Covered
+                    Material (Section 3(d)(iii)).
+
+                (C) Whether material is part of the Work, a Derivative
+                    Work, or a Separate Work is determined according to
+                    its Source form, even where it is merged with other
+                    material into a single work in Object form.
+
+          (viii) Acts.
+
+                (A) "Propagate" means to do anything with Covered
+                    Material that, without permission, would make You
+                    directly or secondarily liable for infringing IP
+                    Rights under applicable law, other than executing or
+                    otherwise using it on a computer or device, or
+                    changing a private copy. It includes copying,
+                    distribution (with or without changes), making
+                    available to the public, and, in some countries,
+                    other activities.
+
+                (B) "Convey" means to Propagate in any way that enables
+                    others to make or receive copies; mere interaction
+                    with a user through a computer network, without
+                    transfer of a copy, is not Conveying.
+
+      (b) Interpretation.
+
+          (i)   "Including" and "such as" introduce examples and do not
+                limit the general words before them.
+
+          (ii)  A reference to a subsection or paragraph without a
+                Section number is to one in the same Section. A
+                reference to a paragraph without a subsection letter is
+                to one in the same subsection.
+
+          (iii) Headings are for convenience only.
+
+          (iv)  Any doubt whether this License restricts an act is
+                resolved in favor of permitting it, unless Contributor
+                Variation(s) expressly provide otherwise.
+
+          (v)   Where this License uses "worldwide", it includes all
+                locations on Earth; all locations on or within every
+                other planet; all other parts of the universe; and any
+                place beyond the universe, whether known now or
+                discovered later.
+
+          (vi)  Anything this License requires or permits to be given
+                to, included for, or made available to recipients may
+                be given in any medium or format reasonably accessible
+                to them.
+
+          (vii) Other Licenses.
+
+                (A) "Other License" means any license other than this
+                    License.
+
+                (B) As an amendment of this License, Contributor
+                    Variation(s) may also grant one or more new, direct
+                    licenses to Covered Material under any Other License
+                    or Other Licenses, as the Contributor applying them
+                    deems fit, from that Contributor and, as Section
+                    4(a) provides, from each other Contributor for its
+                    Contributions.
+
+                (C) Unless the Contributor Variation(s) provide
+                    otherwise, neither Section 2 nor the conditions of
+                    this License apply to rights granted under an Other
+                    License; the grant, the terms and conditions, and
+                    any other information about those rights are as
+                    specified in that Other License, as identified in
+                    the Contributor Variation(s).
+
+      (c) Names and Identifiers.
+
+          (i)   The name of this License is "The 21st Century Liberation
+                License Version 1.0", its short name is "21st Century
+                Liberation License 1.0", and its identifier is
+                "21st-Century-Liberation-License-1.0".
+
+          (ii)  Where Contributor Variation(s) apply, add " with
+                Contributor Variations" to the name and short name and
+                "-Contributor-Variations" to the identifier, followed,
+                for each named set in the order applied, by the set's
+                name in quotation marks (in the name and short name) or
+                a hyphen and the set's name using only letters, digits,
+                hyphens, and full stops (in the identifier).
+
+          (iii) For example, for one set named "Acme", the short name
+                is: 21st Century Liberation License 1.0 with Contributor
+                Variations "Acme"; and the identifier is:
+                21st-Century-Liberation-License-1.0-Contributor-Variations-Acme.
+
+          (iv)  These names and identifiers are labels only; anyone may
+                use others, and the terms of any Covered Material are
+                set by its notices, not by any label. In a short notice
+                under Appendix A(a), however, the identifier is part of
+                the notice: it applies this License, without Contributor
+                Variation(s), and must be given exactly as stated in
+                paragraph (i).
+
+   2. Grant of Licenses. No Contributor grants any license or other
+      right under any of its IP Rights, whether by implication,
+      estoppel, or otherwise, except as this License expressly provides.
+
+      (a) Grant. Subject to this License, each Contributor grants You a
+          perpetual, worldwide, non-exclusive, no-charge, royalty-free
+          license, irrevocable except as subsection (b) provides
+          (Section 7(a) explains the effect of non-compliance):
+
+          (i)   under copyright, to reproduce, prepare Derivative Works
+                of, publicly display and perform, make, have made, use,
+                repair, offer to sell, sell, import, otherwise transfer,
+                Propagate, sublicense, and Convey Covered Material in
+                Source or Object form, and to do every other act this
+                License permits or requires You to do with Covered
+                Material; and
+
+          (ii)  under the patent claims and Other IP Rights Licensable
+                by it that are necessarily infringed by its
+                Contribution(s), alone or in combination with the Work
+                to which those Contributions were submitted, to do every
+                act licensed under paragraph (i).
+
+      (b) Defensive Termination.
+
+          (i)   If You institute litigation against any entity
+                (including a cross-claim or counterclaim) alleging that
+                the Work, or a Contribution incorporated in it,
+                directly, contributorily, or secondarily infringes any
+                patent or Other IP Rights, Your licenses under
+                subsection (a)(ii) for that Work terminate on the date
+                that litigation is filed, and any continued exercise of
+                them is infringement.
+
+          (ii)  Termination applies only to the license under patents,
+                or under the category of Other IP Rights, on which the
+                allegation is based, and does not affect licenses under
+                any other category.
+
+      (c) Effect and Duration of Grants. This subsection applies to all
+          parts of this License, not just this Section.
+
+          (i)   The licenses in this Section are granted once by each
+                Contributor, when the relevant Contribution is first
+                submitted or made available under this License,
+                whichever occurs first. Whether the relevant Contributor
+                may grant them is determined at that time, except that
+                the licenses under Section 2(a)(ii) also extend to
+                patent claims and Other IP Rights that become Licensable
+                by it later. They extend, directly from each Contributor
+                and subject to this License, to everyone who then or
+                later receives Covered Material, in any form, other than
+                under a sublicense; a later receipt only identifies who
+                benefits, and anyone may always receive rights in this
+                way.
+
+          (ii)  Anyone who later acquires or controls the IP Rights
+                licensed under this Section, or an exclusive license
+                under them, by any means (including assignment,
+                inheritance, merger, or insolvency), and any Contributor
+                that transfers those IP Rights or grants an exclusive or
+                non-exclusive license under them, must honor the prior
+                grant made under this License, including the relevant
+                Contributor's waivers, notices, and failures to give
+                notice under Section 7.
+
+          (iii) No Person's failure to comply with this License,
+                including in submitting a Contribution, affects the
+                licenses that Person grants under this Section.
+
+          (iv)  Subject to this License, including subsection (b) and
+                Section 7, the licenses granted under this License do
+                not lapse due to the non-exercise of any right, however
+                long.
+
+   3. Propagating and Conveying. You may Propagate and Convey Covered
+      Material in any medium, with or without changes, in Source or
+      Object form, provided that You meet the following conditions. They
+      apply only to Covered Material, not to other material combined
+      with it, and no further restriction shall be implied.
+
+      (a) Copy of This License.
+
+          (i)   You must give every other recipient of Covered Material
+                a copy of this License and of any Contributor
+                Variation(s) that apply to it, and inform them of any
+                description under Section 7(i)(B) that applies to it,
+                like the example in Appendix A(c).
+
+          (ii)  Each may be given in any medium or format, as Section
+                1(b)(vi) allows, and need not be a text file or in any
+                particular file format.
+
+          (iii) (Optional) For Object form, a statement like the
+                example in Appendix A(b), with any description under
+                Section 7(i)(B) like the example in Appendix A(c), is
+                enough, if the copies it refers to remain obtainable at
+                no charge while You Convey that Object form. Except to
+                the extent that this paragraph provides an alternative
+                method of compliance with paragraph (i), You must still
+                comply with the rest of this subsection.
+
+          (iv)  You need not give a recipient again anything it already
+                has and can reasonably access.
+
+      (b) Notices.
+
+          (i)   In the Source form of Covered Material You Convey, You
+                must retain all rights, copyright, patent, trademark,
+                and attribution notices (including any under Appendix
+                A(a) or (b)), disclaimers of warranty, and limitations
+                of liability from the Source form of the Work that
+                pertain to any part of that Covered Material. You need
+                not add any such notice where there is none.
+
+          (ii)  You may not remove or alter the substance of anything
+                that paragraph (i) or subsection (c) requires You to
+                retain or include, except to correct a known factual
+                inaccuracy, or as this License otherwise allows
+                (including Sections 7(i) and 9(b)(iii)). A correction
+                does not change any rights or obligations under this
+                License or any Contributor Variation(s).
+
+      (c) NOTICE File.
+
+          (i)   A Contributor gives its attribution notices in a text
+                file named "NOTICE" or "NOTICE.txt" included in the
+                Work's distribution (the "NOTICE file"). If the Work's
+                distribution includes a NOTICE file, Covered Material
+                You Convey must include a readable copy of those of its
+                attribution notices, and of its statements under
+                paragraph (iii), that pertain to any part of that
+                Covered Material.
+
+          (ii)  Where You Convey Covered Material in a format or medium
+                other than that of the original NOTICE file, You may
+                give that copy in any format or medium (Section
+                1(b)(vi)), such as in documentation or in a display,
+                interface, or other presentation the Covered Material
+                generates, wherever such notices normally appear,
+                provided that all of it is given and that You state
+                with it that it is the content of the Work's NOTICE
+                file (Appendix A(f) gives an example).
+
+          (iii) The NOTICE file is for information only and does not
+                change this License, except that a Contributor may use
+                it to state Contributor Variation(s) for its own Covered
+                Material (Section 9(a)(i)), with the effect that Section
+                gives them. You may add Your own attribution notices if
+                they cannot be read as changing this License.
+
+          (iv)  A Contributor that adds an attribution notice to a
+                NOTICE file must state in it that the material it
+                applies to is licensed under this License, naming any
+                Contributor Variation(s) that apply. Appendix A(d) gives
+                a template; apart from that statement, its form and
+                wording are examples only.
+
+      (d) Your Changes and Other Terms.
+
+          (i)   You may add Your own copyright or other rights statement
+                to Your changes, and may license Your changes, and any
+                work combining Covered Material with other material as a
+                whole, under this License, or under any terms expressed
+                in any document or otherwise, in any format or medium,
+                that are not part of this License (including additional
+                or different terms and conditions), or under any
+                combination of them, in each case with or without
+                Contributor Variation(s) that You apply to Your changes
+                under Section 9, as if You were a Contributor and Your
+                changes were Your own Covered Material, provided that
+                Your Propagating and Conveying of Covered Material
+                otherwise comply with this License.
+
+          (ii)  Those terms apply only to Your changes and to material
+                that is not Covered Material; all other Covered Material
+                remains under this License. For changes You Convey
+                without stating other terms, You grant Your IP Rights in
+                them under this License; Section 9(b) says when
+                Contributor Variation(s) apply to them.
+
+          (iii) Material You received under separate terms, including
+                Separate Works, remains under those terms; when You
+                Convey Source form containing it, You must identify, by
+                any reasonable method, that it does and on what terms,
+                and a breach of those terms is not in itself
+                non-compliance with this License.
+
+      (e) Source Form. Nothing in this License requires You or any
+          Contributor to make the Source form of any Covered Material
+          available.
+
+      (f) Sublicenses.
+
+          (i)   A sublicense is governed by this License and grants no
+                more rights in Covered Material than this License does.
+                Unless it says otherwise, it may be further sublicensed,
+                and it may set its own termination, cure, and
+                restoration terms.
+
+          (ii)  Anyone who receives Covered Material under a sublicense
+                has rights in it only under that sublicense, not
+                directly under this License; if the sublicense
+                terminates, those rights end, but this License does not.
+
+          (iii) A chain of sublicenses is read as one sublicense, the
+                first of which prevails over any conflicting later one,
+                and a breach of a later sublicense in the chain is also
+                a breach of the first.
+
+   4. Submission of Contributions.
+
+      (a) Terms of Contributions. Unless You explicitly state otherwise
+          when You submit it, or a separate agreement under subsection
+          (b) provides otherwise, any Contribution You submit is made
+          under this License and, where Contributor Variation(s)
+          applying to the Covered Material to which You submit it grant
+          one or more Other Licenses (Section 1(b)(vii)), also under
+          each of those Other Licenses, in each case without additional
+          terms or conditions other than any Contributor Variation(s)
+          You apply to it under Section 9 and state when You submit it.
+          Where You explicitly submit any part of a Contribution under
+          other terms (for example, a part that is a Separate Work),
+          Section 2, and any such Other License, apply to that part only
+          as far as those terms allow. Sections 3(d) and 9 apply to Your
+          Contributions as they apply to Derivative Works You Convey,
+          except that a Contribution is licensed as this subsection
+          provides, not under terms of Your choice.
+
+      (b) Separate Agreements. Nothing in this License supersedes or
+          changes any separate agreement You have executed with the
+          Licensor regarding Your Contributions.
+
+      (c) Credit. Unless You specify otherwise when You submit a
+          Contribution, You may be referred to as a Contributor of the
+          Work, including by name. Giving a copy of this License with
+          Covered Material, in any format or medium, is deemed to credit
+          every Contributor to that Covered Material, and no further
+          credit is required under this License, except the notices that
+          Sections 3(b) and 3(c) require.
+
+   5. Trademarks. Subject to Section 3, this License grants no
+      permission to use the Licensor's trade names, trademarks, service
+      marks, or product names, except as required for reasonable and
+      customary use in describing the Work's origin and reproducing the
+      content of the NOTICE file.
+
+   6. Warranty and Liability.
+
+      (a) Disclaimer of Warranty. UNLESS REQUIRED BY APPLICABLE LAW OR
+          AGREED TO IN WRITING, LICENSOR PROVIDES THE WORK (AND EACH
+          CONTRIBUTOR PROVIDES ITS CONTRIBUTIONS) ON AN "AS IS" BASIS,
+          WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, EITHER EXPRESS
+          OR IMPLIED, INCLUDING, WITHOUT LIMITATION, ANY WARRANTIES OR
+          CONDITIONS OF TITLE, NON-INFRINGEMENT, MERCHANTABILITY, OR
+          FITNESS FOR A PARTICULAR PURPOSE. NOTHING IN THIS LICENSE IS A
+          REPRESENTATION OR WARRANTY THAT ANY CONTRIBUTOR OWNS OR HOLDS
+          ANY PATENT OR OTHER IP RIGHTS, AND ALL RIGHTS NOT EXPRESSLY
+          GRANTED UNDER THIS LICENSE ARE RESERVED BY THEIR RESPECTIVE
+          OWNERS. THE LICENSES UNDER SECTION 2(a)(ii) MAY NOT BE
+          RECOGNIZED OR EFFECTIVE UNDER THE LAW OF EVERY JURISDICTION.
+          WHERE THEY ARE NOT RECOGNIZED OR EFFECTIVE FOR PATENTS OR FOR
+          A CATEGORY OF OTHER IP RIGHTS, ONLY THE LICENSE UNDER THAT
+          CATEGORY IS AFFECTED: EACH CATEGORY IS TREATED SEPARATELY, AND
+          THE LICENSES UNDER OTHER CATEGORIES AND THE REST OF THIS
+          LICENSE REMAIN UNAFFECTED. YOU ARE SOLELY RESPONSIBLE FOR
+          DETERMINING THE APPROPRIATENESS OF USING OR REDISTRIBUTING THE
+          WORK, AND FOR VERIFYING WHETHER ANY LICENSE UNDER SECTION
+          2(a)(ii) HAS BEEN GRANTED TO YOU, AND ASSUME ANY RISKS
+          ASSOCIATED WITH YOUR EXERCISE OF PERMISSIONS UNDER THIS
+          LICENSE. NEITHER RESPONSIBILITY IS A CONDITION OF THIS
+          LICENSE.
+
+      (b) Limitation of Liability. IN NO EVENT AND UNDER NO LEGAL
+          THEORY, WHETHER IN TORT (INCLUDING NEGLIGENCE), CONTRACT, OR
+          OTHERWISE, UNLESS REQUIRED BY APPLICABLE LAW (SUCH AS
+          DELIBERATE AND GROSSLY NEGLIGENT ACTS) OR AGREED TO IN
+          WRITING, SHALL ANY CONTRIBUTOR BE LIABLE TO YOU FOR DAMAGES,
+          INCLUDING ANY DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR
+          CONSEQUENTIAL DAMAGES OF ANY CHARACTER ARISING AS A RESULT OF
+          THIS LICENSE (INCLUDING ANY LICENSE UNDER SECTION 2(a)(ii) NOT
+          BEING RECOGNIZED, EFFECTIVE, OR GRANTED, FOR ANY CATEGORY OF
+          RIGHTS) OR OUT OF THE USE OR INABILITY TO USE THE WORK
+          (INCLUDING BUT NOT LIMITED TO DAMAGES FOR LOSS OF GOODWILL,
+          WORK STOPPAGE, COMPUTER FAILURE OR MALFUNCTION, OR ANY AND ALL
+          OTHER COMMERCIAL DAMAGES OR LOSSES), EVEN IF SUCH CONTRIBUTOR
+          HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+      (c) Products. SUBSECTIONS (a) AND (b) APPLY EQUALLY TO ANY PRODUCT
+          MADE FROM THE WORK, INCLUDING AS TO ITS SAFETY,
+          MANUFACTURABILITY, AND COMPLIANCE WITH ANY LAW, STANDARD, OR
+          CERTIFICATION, AND TO DAMAGES FROM ITS MANUFACTURE,
+          DISTRIBUTION, OR USE, INCLUDING COSTS OF RECALL, REPAIR, OR
+          REPLACEMENT.
+
+      (d) Accepting Warranty or Additional Liability. When Conveying
+          Covered Material, You may offer, and charge for, support,
+          warranty, indemnity, or other liability obligations and/or
+          rights consistent with this License, but only on Your own
+          behalf and sole responsibility, and only if You agree to
+          indemnify, defend, and hold each Contributor harmless for any
+          resulting liability incurred by, or claims asserted against,
+          it.
+
+   7. Non-Compliance, Remedies, and Applicable Law.
+
+      (a) Limited Termination.
+
+          (i)   The only licenses under this License that terminate are
+                those under Section 2(a)(ii), as Section 2(b) provides.
+                All other rights continue, and no one who acquires IP
+                Rights in the Work or a Contribution may terminate this
+                License or any right under it.
+
+          (ii)  Instead, any non-compliant act regarding Covered
+                Material that requires a license under Section 2
+                (including Propagating, Conveying, or using it) is
+                unlicensed and is treated as infringement of the
+                applicable Contributors' rights under applicable law.
+                Compliant acts remain licensed.
+
+          (iii) Covered Material changed or made by a non-compliant act
+                gives You no rights under this License until You cure.
+                After You cure, Your acts regarding it are licensed, but
+                the earlier act remains infringement, subject to
+                subsections (b), (c), and (g).
+
+          (iv)  Regardless of what any sublicense says, You must comply
+                with this License, and no sublicense can protect anyone
+                from such infringement or from termination under Section
+                2(b), excuse or waive either, or change how this Section
+                applies to them. A breach of a sublicense may also be a
+                breach of contract under applicable law.
+
+      (b) Cure Period. If a Contributor notifies You of a failure to
+          comply, and it is that Contributor's first such notice to You
+          regarding the Work, that Contributor shall bring no claim and
+          seek no remedy against You for that failure if You cure it
+          within thirty (30) days of receiving the notice.
+
+      (c) Cessation Without Notice. If You cease all non-compliance, a
+          Contributor shall bring no claim and seek no remedy for it
+          unless it notifies You of it within sixty (60) days after You
+          cease.
+
+      (d) Remedies. Subject to subsections (b), (c), and (g), a
+          Contributor may pursue any remedy available under applicable
+          law for infringement of its rights in Covered Material or for
+          breach of this License, including for acts before any notice,
+          in any court or authority having jurisdiction.
+
+      (e) Limitation Periods. All claims arising from non-compliance are
+          subject to the statutes of limitation, prescription periods,
+          and other time limits of applicable law. Except for the notice
+          period in subsection (c), this Section does not extend,
+          shorten, suspend, revive, or toll any such period.
+
+      (f) Downstream Recipients.
+
+          (i)   Your non-compliance does not affect the rights under
+                this License of anyone who received Covered Material
+                from You, directly or indirectly, including Covered
+                Material You changed, made, or Conveyed non-compliantly,
+                provided that they comply with this License.
+
+          (ii)  Your changes in that Covered Material are licensed to
+                them, and to every later recipient, on the terms You
+                Conveyed them under or, if You stated none, under this
+                License.
+
+      (g) Waiver. A Contributor may, by notice to the Person concerned,
+          waive any past or ongoing infringement or non-compliance. A
+          waiver:
+
+          (i)   binds only that Contributor and waives only its rights;
+
+          (ii)  unless the notice expressly states otherwise, covers
+                only the acts, Persons, and period it describes, and is
+                irrevocable as to those acts; and
+
+          (iii) does not change this License or grant rights beyond
+                those it states.
+
+      (h) Form of Notice. Any notice under this Section is effective
+          only if it is given in writing, or in any other form of
+          communication valid for notices under applicable law, and, if
+          a dispute about it arises, verifiable under the rules of
+          evidence of applicable law as made by the Contributor giving
+          it or by someone authorized to act for that Contributor.
+
+      (i) Applicable Law and Impossibility. This License does not
+          authorize any act that applicable law prohibits, but such an
+          act is not in itself non-compliance with this License. If
+          anything having the force of law (such as a statute, judicial
+          order, regulation, ordinance, order, bye-law, rule,
+          notification, custom, or usage) makes it impossible for You to
+          comply with any term of this License for some or all Covered
+          Material:
+
+          (A) You must comply as far as possible;
+
+          (B) unless anything having the force of law prohibits doing
+              so, You must inform each recipient of Covered Material You
+              Convey, as Section 3(a) provides, of the limitations and
+              the affected parts, in a description detailed enough for a
+              recipient of ordinary skill to understand (Appendix A(c)
+              gives an example); but no description is needed for a
+              continuing obligation arising from Covered Material You
+              Conveyed before compliance became impossible; and
+
+          (C) while, and to the extent that, compliance is impossible
+              and You meet items (A) and (B), Your failure to comply is
+              not non-compliance and the acts concerned remain licensed.
+              The affected terms apply again once the impossibility
+              ends.
+
+          Items (A) to (C) do not apply to an impossibility You brought
+          about to avoid any term of this License. A description under
+          item (B) is required only while compliance is impossible for
+          the Person Conveying. A recipient that receives Covered
+          Material with such a description and can comply fully with the
+          affected terms need not pass that description on and may
+          remove it, provided that it complies fully with those terms; a
+          recipient that can comply with only some of them may instead
+          update the description to cover only what it still cannot
+          comply with. A recipient that is itself affected by an
+          impossibility, whether the same one or another, may remove the
+          description it received and give its own description under
+          item (B) instead, covering every limitation that applies to
+          the Covered Material it Conveys.
+
+   8. General Provisions.
+
+      (a) Entire License and Severability. This License contains all of
+          the terms on its subject matter. Any provision held invalid or
+          unenforceable shall be reformed only as far as necessary to
+          make it enforceable, and enforced to the maximum extent
+          permissible; the rest of this License remains fully effective.
+
+      (b) Fair Use. This License is not intended to limit Your rights
+          under fair use, fair dealing, or equivalent copyright
+          doctrines, or equivalent exceptions to Other IP Rights.
+
+      (c) Moral and Personality Rights.
+
+          (i)   To the extent that moral rights, rights of attribution
+                or integrity, rights of publicity or privacy, or similar
+                personality rights in the Work or a Contribution would
+                otherwise be exercisable against You, each Contributor
+                waives them to the fullest extent applicable law
+                permits.
+
+          (ii)  Where they cannot be waived, each Contributor agrees not
+                to assert them against You while You exercise Your
+                rights under this License in compliance with it.
+
+          (iii) This subsection applies only to the Work and, for each
+                Contributor, its own Contribution; applies only in
+                relation to You; and limits no condition of this
+                License.
+
+      (d) Your Own Work and Use of This License.
+
+          (i)   You may license Your own IP Rights, in any work, under
+                this License, either without Contributor Variation(s) or
+                with any Contributor Variation(s) You apply under
+                Section 9. Any rights You hold other than IP Rights may
+                be licensed under this License only by Contributor
+                Variation(s).
+
+          (ii)  Anyone may give a copy of this License, with or without
+                Contributor Variation(s), in any medium and format.
+
+          (iii) Using this License, with or without Contributor
+                Variation(s), or giving a copy of it, does not create a
+                lawyer-client relationship with its author, any
+                Contributor, or anyone else.
+
+          (iv)  This subsection imposes no condition or obligation under
+                this License; it grants permissions and clarifies legal
+                relationships, and exercising those permissions does
+                not, by itself, breach this License.
+
+      (e) Formalities.
+
+          (i)   The following are the written grant, authentication, and
+                signature of the licenses and Contributor Variation(s)
+                to which they relate: each Contributor's rights notice
+                under Appendix A(a); an Object-form statement under
+                Appendix A(b) provided by a Contributor; any Contributor
+                Variation(s) applied under Section 9; and each
+                Contributor's submission of a Contribution, including
+                any accompanying name or sign-off.
+
+          (ii)  Where applicable law recognizes a grant, authentication,
+                or signature by conduct, conduct such as making the Work
+                or a Contribution available, or indicating that the Work
+                is licensed under this License without fully complying
+                with Appendix A(a), has the same effect.
+
+          (iii) In this License, "sign" and related words (such as
+                "signed", "signature", and "sign-off") include signing
+                by such conduct.
+
+   9. Contributor Variations.
+
+      (a) Applying Contributor Variation(s).
+
+          (i)   Any Contributor may apply Contributor Variation(s)
+                (Section 1(a)(i)) only to its own Covered Material, by
+                stating them below the Appendix A(a) notice, or in any
+                other notice, document, or otherwise, in any format or
+                medium. Contributor Variation(s) not stated below that
+                notice must clearly identify the Covered Material, or
+                the parts of it, they apply to. Contributor Variation(s)
+                are void to the extent they would apply to Covered
+                Material that is not the Contributor's own.
+
+          (ii)  Each waiver, amendment, or override must be stated
+                separately and identify the provision it affects
+                (Appendix A(e) gives an example). A waiver applies only
+                to the extent stated.
+
+          (iii) A set of Contributor Variation(s) may be given a name;
+                Section 1(c) explains how that name is used in this
+                License's name and identifier.
+
+          (iv)  In this Section, a Contributor's "own Covered Material"
+                means the parts of the Covered Material in which it
+                owns IP Rights, or which it is authorized by the owner
+                of those IP Rights to license under this License, such
+                as its Contributions. It does not include any part
+                contributed by another Contributor, unless that other
+                Contributor has authorized it to license that part,
+                even where both parts are in the same file or Derivative
+                Work. Nor does it include Section 3(d)(iii) material.
+
+      (b) Scope and Control.
+
+          (i)   A Contributor's Contributor Variation(s) apply only to
+                the parts of its own Covered Material they identify,
+                including where those parts are copied or adapted into a
+                Derivative Work. They never apply to another
+                Contributor's own Covered Material, and apply to Your
+                changes only where they expressly so require. As to the
+                material they apply to, they prevail over any
+                conflicting provision of this License.
+
+          (ii)  Anyone may act within a waiver they grant.
+
+          (iii) No recipient may remove Contributor Variation(s) from
+                Covered Material, or from any Derivative Work of it,
+                that it Propagates or Conveys under this License, except
+                on the terms and conditions for removal they specify.
+                This does not limit rights under an Other License, which
+                that Other License governs (Section 1(b)(vii)).
+
+      (c) Conflicts. A Contributor may apply several Contributor
+          Variation(s) to the same part of its own Covered Material, in
+          one or more sets. If its Contributor Variation(s) for the same
+          part conflict, including an existing one and a later one, it
+          must state which prevails. If it does not, only the
+          conflicting ones are void as to that part; the others,
+          including the rest of any set, remain effective, and the
+          provisions the void ones would have affected apply as if they
+          had never been applied.
+
+      (d) Different Contributors. Where Contributor Variation(s) of
+          different Contributors apply to the same Covered Material,
+          each only to its own Covered Material within it (such as a
+          file or Derivative Work containing the Contributions of
+          several Contributors), including where it is combined with
+          Section 3(d)(iii) material, You must comply with all of
+          them, except that a Contributor may state in its own
+          Contributor Variation(s) that they yield to those of other
+          Contributors, either generally or to those it identifies, and
+          to that extent the others prevail where they conflict. No
+          Contributor may make another Contributor's Contributor
+          Variation(s) yield, or apply its own to another Contributor's
+          own Covered Material. If You cannot comply, You may not
+          Convey that Covered Material or any Derivative Work of it.
+          Conveying either anyway is non-compliance subject to Section
+          7, but does not by itself terminate any license (Sections
+          2(b) and 7(a)). This subsection does not apply Contributor
+          Variation(s) to Section 3(d)(iii) material, which remains
+          under its own terms.
+
+      (e) Copies Already Received.
+
+          (i)   Contributor Variation(s), changes to or withdrawals of
+                them, and statements or voidness under subsection (c)
+                affect only copies that the Contributor that applied
+                them Conveys afterwards; not copies received before
+                then, Derivative Works of those copies, or copies of
+                either Conveyed by anyone.
+
+          (ii)  No Contributor may, retroactively or prospectively,
+                impose any obligation, or withdraw, limit, or alter any
+                right, in material already received, whether under this
+                License or under an Other License granted by Contributor
+                Variation(s) (Section 1(b)(vii)), except as expressly
+                stated in the text of the Contributor Variation(s) that
+                applied to that material when it was received or, for an
+                Other License, as that Other License itself provides.
+
+                               APPENDIX A
+                   Notices, Statements, and Examples
+
+      (a) Rights Notice. To apply this License to a work, add one of the
+          following notices to it.
+
+          (i)   Full Notice. This notice may always be used:
+
+          +------------------------------------------------------------+
+          | Copyright [yyyy] [name of IP Rights owner]                 |
+          | Licensed under The 21st Century Liberation License,        |
+          | Version 1.0 (the "License"). You may copy and distribute   |
+          | this work, with or without changes, only in compliance     |
+          | with the License. You may obtain a copy of the License     |
+          | [in the LICENSE file accompanying this work / at           |
+          | [location]].                                               |
+          | Unless required by applicable law or agreed to in writing, |
+          | this work is distributed under the License on an "AS IS"   |
+          | BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,       |
+          | either express or implied. See the License for the         |
+          | specific language governing permissions and limitations    |
+          | under the License.                                         |
+          +------------------------------------------------------------+
+
+          (ii)  Short Notice. Where no Contributor Variation(s) apply,
+                this notice may be used instead, provided that a copy of
+                this License accompanies the work, or a location where
+                one can be obtained at no charge is given with it:
+
+          +------------------------------------------------------------+
+          | Copyright [yyyy] [name of IP Rights owner]                 |
+          | License: 21st-Century-Liberation-License-1.0               |
+          +------------------------------------------------------------+
+
+          (iii) Effect. Either notice is a rights notice under this
+                subsection, and both have the same effect. In the short
+                notice, the identifier may also be given in a
+                machine-readable form, such as a license-identifier
+                comment. In either notice, and in every other notice or
+                example in this Appendix, "Copyright" refers to all IP
+                Rights (Section 1(a)(iv)) in the work, not only
+                copyright.
+
+          (iv)  Completing the Notice. Complete the bracketed fields. In
+                the full notice, keep one of the two alternatives for
+                where a copy of the License can be obtained. Any
+                location given, in either notice, must remain obtainable
+                at no charge.
+
+          (v)   Placing the Notice. Put the notice in the comment syntax
+                suited to the work's format. Where the work or a copy of
+                it, whether software, data, a physical object, or
+                anything else, cannot hold the notice, or the notice
+                cannot be applied to it directly, give the notice in any
+                way Section 1(b)(vi) allows, such as in accompanying
+                physical or digital documentation, identifying the
+                material concerned.
+
+          (vi)  Identifying the Work. Placing the work's name and a
+                brief description of its purpose next to the notice is
+                recommended, to help identify the work in third-party
+                archives.
+
+      (b) Object-Form Statement. A statement such as the following
+          meets, for Object form, the duty to inform in Section 3(a):
+
+          +------------------------------------------------------------+
+          | This product includes material licensed under The 21st     |
+          | Century Liberation License, Version 1.0[, with             |
+          | Contributor Variations "[name]"]. A copy of the License[,  |
+          | and of those Contributor Variation(s),] is [included with  |
+          | this product / available at [location]].                   |
+          +------------------------------------------------------------+
+
+          Delete any bracketed text that does not apply, and complete
+          the rest.
+
+      (c) Statement of Legal Limitations. A statement such as the
+          following can give the description Section 7(i)(B) requires:
+
+          +------------------------------------------------------------+
+          | Because of [the law, order, or other measure having the    |
+          | force of law, and where it applies], the following terms   |
+          | of The 21st Century Liberation License, Version 1.0,       |
+          | cannot be fully complied with for this product:            |
+          | - [term, such as "Section 3(c)"]: [affected parts or       |
+          |   material]: [what cannot be done, and what is done        |
+          |   instead, if anything].                                   |
+          | These terms are complied with as far as possible, and all  |
+          | others in full.                                            |
+          +------------------------------------------------------------+
+
+          List each affected term separately.
+
+      (d) NOTICE File. The following is a template for the contents of
+          a NOTICE file (Section 3(c)(i)). Except for the statement
+          Section 3(c)(iv) requires, it is an example only and is not
+          binding; a copy given in another format or medium under
+          Section 3(c)(ii) may take any form:
+
+          +------------------------------------------------------------+
+          | [Name of the Work]                                         |
+          | Copyright [yyyy] [name of IP Rights owner]                 |
+          | Licensed under The 21st Century Liberation License,        |
+          | Version 1.0[, with Contributor Variations "[name]"].       |
+          | Applies to: [the files, parts, or other material           |
+          | concerned, or "all of the Work"].                          |
+          |                                                            |
+          | This product includes material developed by [name of       |
+          | Contributor] ([location]), licensed under The 21st         |
+          | Century Liberation License, Version 1.0[, with             |
+          | Contributor Variations "[name]"].                          |
+          | Applies to: [the files, parts, or other material           |
+          | concerned].                                                |
+          |                                                            |
+          | [Any other attribution notices, each with its own          |
+          | "Applies to" line.]                                        |
+          +------------------------------------------------------------+
+
+          Stating which files, parts, or other material each notice
+          applies to helps recipients see which notices pertain to the
+          Covered Material they Convey (Sections 3(b) and 3(c)). Include
+          only attribution notices.
+
+      (e) Contributor Variation(s). The following is an example of how
+          to apply Contributor Variation(s) under Section 9(a):
+
+          +------------------------------------------------------------+
+          | The Contributor applies the following Contributor          |
+          | Variation(s), named "[name]", to this work under           |
+          | Section 9 of The 21st Century Liberation License:          |
+          | (1) Waiver: The condition in Section [number] is waived    |
+          |     for this work[, to the extent that [describe]].        |
+          | (2) Amendment: Section [number] applies to this work [as   |
+          |     if it read: "[new text]" / with the following added:   |
+          |     "[added text]"].                                       |
+          | (3) Override: Instead of Section [number], the following   |
+          |     applies to this work: "[text]".                        |
+          +------------------------------------------------------------+
+
+      (f) NOTICE File in Another Format. The following is an example
+          of how to give the content of a NOTICE file in a format or
+          medium other than that of the original NOTICE file, as
+          Section 3(c)(ii) allows, such as on an "About" or "Credits"
+          screen, in a printed manual, or in a PDF or HTML document:
+
+          +------------------------------------------------------------+
+          | The following is the content of the NOTICE file of         |
+          | [name of the Work][, as it pertains to this product]:      |
+          |                                                            |
+          | [the complete text of those attribution notices, and of    |
+          | any statements under Section 3(c)(iii), that pertain to    |
+          | the Covered Material, without changing their substance]    |
+          +------------------------------------------------------------+
+
+          Give the statement and the text together, wherever such
+          notices normally appear. The text may be reformatted (for
+          example, with different fonts, line breaks, or layout), but
+          none of the required notices or statements may be left out.
+          Delete any bracketed text that does not apply, and complete
+          the rest.
+
+   END OF TERMS AND CONDITIONS

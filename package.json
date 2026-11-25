@@ -1,17 +1,20 @@
 {
-  "name": "crxviewer",
-  "version": "0.0.0",
-  "description": "Tools and dependencies to build CRX viewer.",
+  "name": "zen-source-viewer",
+  "version": "3.0.151",
+  "description": "Tools and dependencies to build Zen Source Viewer, a viewer for the source code of browser add-ons: Firefox and Thunderbird (XPI), and Chrome, Edge and Opera (CRX).",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Rob--W/crxviewer.git"
+    "url": "https://github.com/subham8907/Zen-Source-Viewer.git"
   },
-  "author": "Rob Wu <rob@robwu.nl> (https://robwu.nl/)",
-  "license": "MPL-2.0",
+  "author": "Subham Mahesh (https://github.com/subham8907)",
+  "contributors": [
+    "Rob Wu <rob@robwu.nl> (https://robwu.nl/)"
+  ],
+  "license": "MPL-2.0 AND LicenseRef-21st-Century-Liberation-License-1.0",
   "bugs": {
-    "url": "https://github.com/Rob--W/crxviewer/issues"
+    "url": "https://github.com/subham8907/Zen-Source-Viewer/issues"
   },
-  "homepage": "https://github.com/Rob--W/crxviewer#readme",
+  "homepage": "https://github.com/subham8907/Zen-Source-Viewer#readme",
   "private": true,
   "devDependencies": {
     "@codemirror/autocomplete": "^6.20.4",
@@ -34,9 +37,12 @@
     "@noble/hashes": "^2.4.0",
     "@zip.js/zip.js": "^2.24.0",
     "codemirror": "^6.0.2",
+    "diff": "^9.0.0",
     "esbuild": "^0.28.2",
+    "fflate": "^0.8.3",
     "js-beautify": "^2.0.3",
     "less": "^2.7.1",
+    "marked": "^18.2.0",
     "shelljs": "^0.8.5",
     "strip-json-comments": "^5.0.3"
   }
