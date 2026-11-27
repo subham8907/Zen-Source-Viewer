@@ -1,6 +1,6 @@
 {
   "name": "zen-source-viewer",
-  "version": "3.0.154",
+  "version": "3.0.155",
   "description": "Tools and dependencies to build Zen Source Viewer, a viewer for the source code of browser add-ons: Firefox and Thunderbird (XPI), and Chrome, Edge and Opera (CRX).",
   "repository": {
     "type": "git",
